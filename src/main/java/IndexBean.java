@@ -1,11 +1,15 @@
 import java.io.Serializable;
-
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 
 @Named("index")
 @SessionScoped
 public class IndexBean implements Serializable {
+
+	static {
+		System.out.println("[DEBUG] ==================== IndexBean CLASS LOADED ====================");
+	}
+
 	/**
 	 * 
 	 */
@@ -13,7 +17,7 @@ public class IndexBean implements Serializable {
 	private String language = "en";
 	
 	public IndexBean() {
-		
+		System.out.println("[DEBUG] IndexBean - Constructor called");
 	}
 	
 	public String createRide() {
