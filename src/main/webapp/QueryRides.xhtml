@@ -12,8 +12,25 @@
 		<h:form>
 			<h3>Query Rides</h3>
 			<p>
-				<!-- Add your ride creation form fields here -->
+				<h:outputLabel value="From: " for="fromCity" />
+				<h:selectOneMenu id="fromCity" value="#{queryRides.selectedFrom}">
+					<f:selectItem itemLabel="-- Select City --" itemValue="" />
+					<f:selectItems value="#{queryRides.departingCities}" />
+				</h:selectOneMenu>
+				<h:commandButton value="Get Destinations" 
+								 action="#{queryRides.loadDestinations}"
+								 style="margin-left: 1em;" />
 			</p>
+			
+			<h:panelGroup rendered="#{not empty queryRides.destinationCities}">
+				<h3>Available Destinations:</h3>
+				<ul>
+					<ui:repeat value="#{queryRides.destinationCities}" var="city">
+						<li>#{city}</li>
+					</ui:repeat>
+				</ul>
+			</h:panelGroup>
+			
 			<p>
 				<h:commandButton value="Back to Index" action="Index"
 					style="font-size: 1em; padding: 0.5em 1em;" />
