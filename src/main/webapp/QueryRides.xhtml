@@ -3,33 +3,197 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core">
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
 <f:view>
 	<h:head>
 		<title>Query Rides</title>
+		<style>
+			.available-date a {
+				background-color: #4CAF50 !important;
+				color: white !important;
+				font-weight: bold !important;
+				border-radius: 50% !important;
+				width: 30px !important;
+				height: 30px !important;
+				line-height: 30px !important;
+				text-align: center !important;
+				display: inline-flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				padding: 0 !important;
+			}
+			.available-date a:hover {
+				background-color: #45a049 !important;
+			}
+			.ui-datepicker {
+				font-size: 0.85em;
+				width: fit-content !important;
+				max-width: fit-content !important;
+			}
+			.ui-datepicker table {
+				border-collapse: collapse;
+				width: 100% !important;
+			}
+			.ui-datepicker td {
+				padding: 1px !important;
+				text-align: center;
+			}
+			.ui-datepicker td a, .ui-datepicker td span {
+				padding: 5px !important;
+				font-size: 0.95em !important;
+				width: 30px;
+				height: 30px;
+				line-height: 20px;
+				display: inline-block;
+				text-align: center;
+			}
+			.ui-datepicker th {
+				padding: 6px 2px !important;
+				font-weight: bold;
+				font-size: 0.9em !important;
+				text-align: center;
+			}
+			.ui-datepicker .ui-datepicker-header {
+				padding: 4px !important;
+				font-size: 0.9em !important;
+				position: relative !important;
+			}
+			.ui-datepicker .ui-datepicker-title {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: flex-start !important;
+				gap: 6px;
+				padding-left: 35px !important;
+			}
+			.ui-datepicker .ui-datepicker-month,
+			.ui-datepicker .ui-datepicker-year {
+				font-size: 0.85em !important;
+				padding: 2px 3px !important;
+				margin: 0 !important;
+				width: auto !important;
+				min-width: 60px;
+			}
+			.ui-datepicker-prev {
+				position: absolute !important;
+				left: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-prev span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next {
+				position: absolute !important;
+				right: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+		</style>
+		<script type="text/javascript">
+		//<![CDATA[
+			var availableDates = [];
+			
+			function updateAvailableDates(datesJson) {
+				availableDates = JSON.parse(datesJson);
+				console.log('Available dates updated:', availableDates);
+			}
+			
+			function isDateAvailable(date) {
+				var dateStr = formatDate(date);
+				var isAvailable = availableDates.indexOf(dateStr) !== -1;
+				// Return array: [enabled, cssClass, tooltip]
+				return [isAvailable, isAvailable ? 'available-date' : '', ''];
+			}
+			
+			function formatDate(date) {
+				var d = new Date(date);
+				var month = '' + (d.getMonth() + 1);
+				var day = '' + d.getDate();
+				var year = d.getFullYear();
+				
+				if (month.length < 2) month = '0' + month;
+				if (day.length < 2) day = '0' + day;
+				
+				return [year, month, day].join('-');
+			}
+		//]]>
+		</script>
 	</h:head>
 	<h:body>
-		<h:form>
+		<h:form id="queryForm">
 			<h3>Query Rides</h3>
-			<p>
+			
+			<h:inputHidden id="datesJson" value="#{queryRides.availableDatesJson}" />
+			
+			<h:panelGrid columns="2" style="margin-bottom: 20px;">
 				<h:outputLabel value="From: " for="fromCity" />
 				<h:selectOneMenu id="fromCity" value="#{queryRides.selectedFrom}">
 					<f:selectItem itemLabel="-- Select City --" itemValue="" />
 					<f:selectItems value="#{queryRides.departingCities}" />
+					<p:ajax event="change" update="toCity calendarPanel hiddenDates" process="@this" oncomplete="refreshCalendarDates()" />
 				</h:selectOneMenu>
-				<h:commandButton value="Get Destinations" 
-								 action="#{queryRides.loadDestinations}"
-								 style="margin-left: 1em;" />
-			</p>
+				
+				<h:outputLabel value="To: " for="toCity" />
+				<h:selectOneMenu id="toCity" value="#{queryRides.selectedTo}" disabled="#{empty queryRides.destinationCities}">
+					<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
+					<f:selectItems value="#{queryRides.destinationCities}" />
+					<p:ajax event="change" update="calendarPanel hiddenDates" process="@this" listener="#{queryRides.loadAvailableDates}" oncomplete="refreshCalendarDates()" />
+				</h:selectOneMenu>
+			</h:panelGrid>
 			
-			<h:panelGroup rendered="#{not empty queryRides.destinationCities}">
-				<h3>Available Destinations:</h3>
-				<ul>
-					<ui:repeat value="#{queryRides.destinationCities}" var="city">
-						<li>#{city}</li>
-					</ui:repeat>
-				</ul>
+			<h:panelGroup id="calendarPanel">
+				<h:panelGroup rendered="#{not empty queryRides.selectedFrom and not empty queryRides.selectedTo}">
+					<h:outputLabel value="Data (PrimeFaces-ekin): " style="display: block; margin-bottom: 10px;" />
+					<p:calendar id="dateCalendar" 
+								value="#{queryRides.selectedDate}" 
+								navigator="true" 
+								mode="inline"
+								pattern="dd/MM/yyyy"
+								beforeShowDay="isDateAvailable"
+								widgetVar="calendarWidget"
+								oncomplete="refreshCalendarDates()">
+						<p:ajax event="dateSelect" listener="#{queryRides.onDateSelect}" />
+						<p:ajax event="viewChange" listener="#{queryRides.onViewChange}" oncomplete="refreshCalendarDates()" />
+					</p:calendar>
+				</h:panelGroup>
 			</h:panelGroup>
+			
+			<h:inputHidden id="hiddenDates" value="#{queryRides.availableDatesJson}" />
+			
+			<script type="text/javascript">
+			//<![CDATA[
+				function refreshCalendarDates() {
+					var datesJson = document.getElementById('queryForm:hiddenDates').value;
+					if (datesJson) {
+						availableDates = JSON.parse(datesJson);
+						console.log('Dates refreshed:', availableDates);
+						if (typeof PF !== 'undefined' && PF('calendarWidget')) {
+							setTimeout(function() {
+								PF('calendarWidget').refresh();
+							}, 50);
+						}
+					}
+				}
+			//]]>
+			</script>
 			
 			<p>
 				<h:commandButton value="Back to Index" action="Index"
