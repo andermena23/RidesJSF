@@ -106,6 +106,31 @@
 				align-items: center !important;
 				justify-content: center !important;
 			}
+			.rides-table {
+				border-collapse: collapse;
+				width: 100%;
+				margin-top: 10px;
+			}
+			.rides-table-header {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				font-weight: bold;
+			}
+			.rides-table td {
+				padding: 10px;
+				border: 1px solid #ddd;
+			}
+			.rides-table-row-odd {
+				background-color: #f9f9f9;
+			}
+			.rides-table-row-even {
+				background-color: #ffffff;
+			}
+			.rides-table tr:hover {
+				background-color: #f5f5f5;
+			}
 		</style>
 		<script type="text/javascript">
 		//<![CDATA[
@@ -170,9 +195,54 @@
 								beforeShowDay="isDateAvailable"
 								widgetVar="calendarWidget"
 								oncomplete="refreshCalendarDates()">
-						<p:ajax event="dateSelect" listener="#{queryRides.onDateSelect}" />
+						<p:ajax event="dateSelect" listener="#{queryRides.onDateSelect}" update="ridesTable" />
 						<p:ajax event="viewChange" listener="#{queryRides.onViewChange}" oncomplete="refreshCalendarDates()" />
 					</p:calendar>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:panelGroup id="ridesTable">
+				<h:panelGroup rendered="#{not empty queryRides.rides}">
+					<h3 style="margin-top: 30px;">Available Rides for #{queryRides.selectedDate}</h3>
+					<h:dataTable value="#{queryRides.rides}" var="ride" 
+								 styleClass="rides-table" 
+								 headerClass="rides-table-header" 
+								 rowClasses="rides-table-row-odd,rides-table-row-even"
+								 style="border-collapse: collapse; width: 100%; margin-top: 10px; border: 1px solid #ddd;">
+						<h:column>
+							<f:facet name="header">Driver</f:facet>
+							#{ride.driver.name}
+						</h:column>
+						<h:column>
+							<f:facet name="header">From</f:facet>
+							#{ride.from}
+						</h:column>
+						<h:column>
+							<f:facet name="header">To</f:facet>
+							#{ride.to}
+						</h:column>
+						<h:column>
+							<f:facet name="header">Date</f:facet>
+							<h:outputText value="#{ride.date}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</h:column>
+					<h:column>
+						<f:facet name="header">Places</f:facet>
+						<h:outputText value="#{ride.nPlaces}">
+							<f:convertNumber integerOnly="true" />
+						</h:outputText>
+					</h:column>
+						<h:column>
+							<f:facet name="header">Price</f:facet>
+							<h:outputText value="#{ride.price}">
+								<f:convertNumber type="currency" currencySymbol="€" />
+							</h:outputText>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{empty queryRides.rides and not empty queryRides.selectedFrom and not empty queryRides.selectedTo and queryRides.selectedDate ne null}">
+					<p style="margin-top: 20px; font-style: italic; color: #666;">No rides available for the selected date.</p>
 				</h:panelGroup>
 			</h:panelGroup>
 			

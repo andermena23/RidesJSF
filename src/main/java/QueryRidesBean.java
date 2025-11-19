@@ -7,6 +7,7 @@ import java.util.List;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 import businessLogic.*;
+import domain.Ride;
 
 @Named("queryRides")
 @SessionScoped
@@ -31,6 +32,7 @@ public class QueryRidesBean implements Serializable{
 	private String selectedTo = "";
 	private Date selectedDate = new Date();
 	private List<Date> availableDates = new ArrayList<>();
+	private List<Ride> rides = new ArrayList<>();
 	
 	public QueryRidesBean() {
 		System.out.println("[DEBUG] QueryRidesBean - Constructor called");
@@ -97,8 +99,13 @@ public class QueryRidesBean implements Serializable{
 	public String getRides(String from, String to, Date date) {
 		System.out.println("[DEBUG] QueryRidesBean - getRides() called with from: '" + from + "', to: '" + to + "', date: " + date);
 		System.out.println("[DEBUG] QueryRidesBean - facadeBL is " + (facadeBL != null ? "available" : "NULL"));
-		// List<Ride> resultRides = facadeBL.getRides(from, to, date);
-		// Process resultRides as needed
+		if (facadeBL != null && from != null && !from.isEmpty() && to != null && !to.isEmpty() && date != null) {
+			rides = facadeBL.getRides(from, to, date);
+			System.out.println("[DEBUG] QueryRidesBean - Loaded rides: " + (rides != null ? rides.size() + " rides" : "NULL"));
+		} else {
+			rides = new ArrayList<>();
+			System.out.println("[DEBUG] QueryRidesBean - Cleared rides (missing parameters)");
+		}
 		System.out.println("[DEBUG] QueryRidesBean - getRides completed");
 		return "";
 	}
@@ -173,8 +180,11 @@ public class QueryRidesBean implements Serializable{
 		// Reload available dates for the newly selected month
 		if (selectedFrom != null && !selectedFrom.isEmpty() && selectedTo != null && !selectedTo.isEmpty()) {
 			loadAvailableDates();
+			// Load rides for the selected date
+			getRides(selectedFrom, selectedTo, selectedDate);
 		} else {
 			System.out.println("[DEBUG] QueryRidesBean - Cannot reload: from='" + selectedFrom + "', to='" + selectedTo + "'");
+			rides = new ArrayList<>();
 		}
 	}
 	
@@ -204,6 +214,12 @@ public class QueryRidesBean implements Serializable{
 		return result;
 	}
 	
+	public void setAvailableDatesJson(String json) {
+		// This setter is required by JSF but we don't need to parse the JSON back
+		// The property is computed from availableDates list
+		System.out.println("[DEBUG] QueryRidesBean - setAvailableDatesJson() called (no-op)");
+	}
+	
 	public boolean isDateWithRides(Date date) {
 		if (availableDates == null || availableDates.isEmpty() || date == null) {
 			return false;
@@ -228,6 +244,16 @@ public class QueryRidesBean implements Serializable{
 		return cal1.get(java.util.Calendar.YEAR) == cal2.get(java.util.Calendar.YEAR) &&
 			   cal1.get(java.util.Calendar.MONTH) == cal2.get(java.util.Calendar.MONTH) &&
 			   cal1.get(java.util.Calendar.DAY_OF_MONTH) == cal2.get(java.util.Calendar.DAY_OF_MONTH);
+	}
+	
+	public List<Ride> getRides() {
+		System.out.println("[DEBUG] QueryRidesBean - getRides() getter called, size: " + (rides != null ? rides.size() : "NULL"));
+		return rides;
+	}
+	
+	public void setRides(List<Ride> rides) {
+		System.out.println("[DEBUG] QueryRidesBean - setRides() called with size: " + (rides != null ? rides.size() : "NULL"));
+		this.rides = rides;
 	}
 	
 }
