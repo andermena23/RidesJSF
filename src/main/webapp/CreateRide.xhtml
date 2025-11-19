@@ -3,18 +3,136 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core">
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
 <f:view>
 	<h:head>
 		<title>Create Ride</title>
+		<style>
+			.ui-datepicker {
+				font-size: 0.85em;
+				width: fit-content !important;
+				max-width: fit-content !important;
+			}
+			.ui-datepicker table {
+				border-collapse: collapse;
+				width: 100% !important;
+			}
+			.ui-datepicker td {
+				padding: 1px !important;
+				text-align: center;
+			}
+			.ui-datepicker td a, .ui-datepicker td span {
+				padding: 5px !important;
+				font-size: 0.95em !important;
+				width: 30px;
+				height: 30px;
+				line-height: 20px;
+				display: inline-block;
+				text-align: center;
+			}
+			.ui-datepicker th {
+				padding: 6px 2px !important;
+				font-weight: bold;
+				font-size: 0.9em !important;
+				text-align: center;
+			}
+			.ui-datepicker .ui-datepicker-header {
+				padding: 4px !important;
+				font-size: 0.9em !important;
+				position: relative !important;
+			}
+			.ui-datepicker .ui-datepicker-title {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: flex-start !important;
+				gap: 6px;
+				padding-left: 35px !important;
+			}
+			.ui-datepicker .ui-datepicker-month,
+			.ui-datepicker .ui-datepicker-year {
+				font-size: 0.85em !important;
+				padding: 2px 3px !important;
+				margin: 0 !important;
+				width: auto !important;
+				min-width: 60px;
+			}
+			.ui-datepicker-prev {
+				position: absolute !important;
+				left: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-prev span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next {
+				position: absolute !important;
+				right: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+		</style>
 	</h:head>
 	<h:body>
-		<h:form>
+		<h:form id="createForm">
 			<h3>Create Ride</h3>
+			
+			<h:panelGrid columns="2" style="margin-bottom: 20px;">
+				<h:outputLabel value="Driver Name: " for="driverName" />
+				<h:inputText id="driverName" value="#{createRide.driverName}" required="true" />
+				
+				<h:outputLabel value="From: " for="fromCity" />
+				<h:selectOneMenu id="fromCity" value="#{createRide.selectedFrom}">
+					<f:selectItem itemLabel="-- Select City --" itemValue="" />
+					<f:selectItems value="#{createRide.departingCities}" />
+					<p:ajax event="change" update="toCity" process="@this" />
+				</h:selectOneMenu>
+				
+				<h:outputLabel value="To: " for="toCity" />
+				<h:selectOneMenu id="toCity" value="#{createRide.selectedTo}" disabled="#{empty createRide.destinationCities}">
+					<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
+					<f:selectItems value="#{createRide.destinationCities}" />
+				</h:selectOneMenu>
+				
+				<h:outputLabel value="Date: " for="dateCalendar" />
+				<p:calendar id="dateCalendar" 
+							value="#{createRide.selectedDate}" 
+							navigator="true" 
+							mode="inline"
+							pattern="dd/MM/yyyy" />
+				
+				<h:outputLabel value="Number of Places: " for="nplaces" />
+				<h:inputText id="nplaces" value="#{createRide.nplaces}" required="true">
+					<f:convertNumber integerOnly="true" />
+				</h:inputText>
+				
+				<h:outputLabel value="Price: " for="price" />
+				<h:inputText id="price" value="#{createRide.price}" required="true">
+					<f:convertNumber type="number" minFractionDigits="2" maxFractionDigits="2" />
+				</h:inputText>
+			</h:panelGrid>
+			
 			<p>
-				<!-- Add your ride creation form fields here -->
-			</p>
-			<p>
+				<h:commandButton value="Create Ride" action="#{createRide.createRide}"
+					style="font-size: 1em; padding: 0.5em 1em; margin-right: 10px;" />
 				<h:commandButton value="Back to Index" action="Index"
 					style="font-size: 1em; padding: 0.5em 1em;" />
 			</p>
