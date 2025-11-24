@@ -9,6 +9,22 @@
 	<h:head>
 		<title>Create Ride</title>
 		<style>
+			.message-success {
+				padding: 10px;
+				margin: 10px 0;
+				border-radius: 5px;
+				background-color: #d4edda;
+				color: #155724;
+				border: 1px solid #c3e6cb;
+			}
+			.message-error {
+				padding: 10px;
+				margin: 10px 0;
+				border-radius: 5px;
+				background-color: #f8d7da;
+				color: #721c24;
+				border: 1px solid #f5c6cb;
+			}
 			.ui-datepicker {
 				font-size: 0.85em;
 				width: fit-content !important;
@@ -95,22 +111,45 @@
 		<h:form id="createForm">
 			<h3>Create Ride</h3>
 			
+			<h:panelGroup rendered="#{not empty createRide.message}">
+				<p styleClass="#{createRide.success ? 'message-success' : 'message-error'}">
+					#{createRide.message}
+				</p>
+			</h:panelGroup>
+			
 			<h:panelGrid columns="2" style="margin-bottom: 20px;">
-				<h:outputLabel value="Driver Name: " for="driverName" />
-				<h:inputText id="driverName" value="#{createRide.driverName}" required="true" />
+				<h:outputLabel value="Driver Email: " for="driverEmail" />
+				<h:inputText id="driverEmail" value="#{createRide.driverEmail}" required="true" readonly="true" style="background-color: #e9ecef; color: #6c757d;" />
 				
 				<h:outputLabel value="From: " for="fromCity" />
-				<h:selectOneMenu id="fromCity" value="#{createRide.selectedFrom}">
-					<f:selectItem itemLabel="-- Select City --" itemValue="" />
-					<f:selectItems value="#{createRide.departingCities}" />
-					<p:ajax event="change" update="toCity" process="@this" />
-				</h:selectOneMenu>
+				<h:panelGroup>
+					<h:selectOneMenu id="fromCity" value="#{createRide.selectedFrom}">
+						<f:selectItem itemLabel="-- Select City --" itemValue="" />
+						<f:selectItems value="#{createRide.departingCities}" />
+						<p:ajax event="change" update="customFromPanel toCity" process="@this" />
+					</h:selectOneMenu>
+					<h:panelGroup id="customFromPanel" style="display: block; margin-top: 5px;">
+						<h:inputText id="customFrom" value="#{createRide.customFromCity}" 
+									 rendered="#{createRide.selectedFrom eq 'Other'}" 
+									 placeholder="Enter city name" 
+									 style="width: 200px;" />
+					</h:panelGroup>
+				</h:panelGroup>
 				
 				<h:outputLabel value="To: " for="toCity" />
-				<h:selectOneMenu id="toCity" value="#{createRide.selectedTo}" disabled="#{empty createRide.destinationCities}">
-					<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
-					<f:selectItems value="#{createRide.destinationCities}" />
-				</h:selectOneMenu>
+				<h:panelGroup>
+					<h:selectOneMenu id="toCity" value="#{createRide.selectedTo}">
+						<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
+						<f:selectItems value="#{createRide.destinationCities}" />
+						<p:ajax event="change" update="customToPanel fromCity" process="@this" />
+					</h:selectOneMenu>
+					<h:panelGroup id="customToPanel" style="display: block; margin-top: 5px;">
+						<h:inputText id="customTo" value="#{createRide.customToCity}" 
+									 rendered="#{createRide.selectedTo eq 'Other'}" 
+									 placeholder="Enter city name" 
+									 style="width: 200px;" />
+					</h:panelGroup>
+				</h:panelGroup>
 				
 				<h:outputLabel value="Date: " for="dateCalendar" />
 				<p:calendar id="dateCalendar" 
@@ -132,8 +171,10 @@
 			
 			<p>
 				<h:commandButton value="Create Ride" action="#{createRide.createRide}"
-					style="font-size: 1em; padding: 0.5em 1em; margin-right: 10px;" />
-				<h:commandButton value="Back to Index" action="Index"
+					style="font-size: 1em; padding: 0.5em 1em; margin-right: 10px;">
+					<f:ajax execute="@form" render="@form" />
+				</h:commandButton>
+				<h:commandButton value="Back to Index" action="Index" immediate="true"
 					style="font-size: 1em; padding: 0.5em 1em;" />
 			</p>
 		</h:form>

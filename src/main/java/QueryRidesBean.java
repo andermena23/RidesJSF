@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.enterprise.context.SessionScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import businessLogic.*;
 import domain.Ride;
 
 @Named("queryRides")
-@SessionScoped
+@ViewScoped
 public class QueryRidesBean implements Serializable{
 
 	static {
@@ -37,6 +38,15 @@ public class QueryRidesBean implements Serializable{
 	public QueryRidesBean() {
 		System.out.println("[DEBUG] QueryRidesBean - Constructor called");
 		System.out.println("[DEBUG] QueryRidesBean - facadeBL at construction: " + (facadeBL != null ? "injected" : "NULL (will be injected after construction)"));
+	}
+	
+	@PostConstruct
+	public void init() {
+		System.out.println("[DEBUG] QueryRidesBean - @PostConstruct init() called - clearing cache for fresh view");
+		// Clear any cached data when view is initialized
+		rides.clear();
+		availableDates.clear();
+		System.out.println("[DEBUG] QueryRidesBean - Cache cleared, bean ready with fresh state");
 	}
 	
 	public String loadDestinations() {
@@ -120,6 +130,10 @@ public class QueryRidesBean implements Serializable{
 			if (result != null) {
 				availableDates = result;
 				System.out.println("[DEBUG] QueryRidesBean - Loaded available dates (" + availableDates.size() + " dates): " + availableDates);
+				// Log each date for debugging
+				for (int i = 0; i < availableDates.size(); i++) {
+					System.out.println("[DEBUG] QueryRidesBean -   Date[" + i + "]: " + availableDates.get(i));
+				}
 			} else {
 				availableDates = new ArrayList<>();
 				System.out.println("[DEBUG] QueryRidesBean - facadeBL returned null, initialized empty list");

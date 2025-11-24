@@ -17,26 +17,31 @@ public class CreateRideBean implements Serializable {
 	@Named("businessLogic")
 	private BLFacade facadeBL;
 	
-	private String driverName = "";
+	private String driverEmail = "driver1@gmail.com";
 	private String selectedFrom = "";
 	private String selectedTo = "";
+	private String customFromCity = "";
+	private String customToCity = "";
 	private Date selectedDate = new Date();
 	private Integer nplaces = 0;
 	private Double price = 0.0;
 	
 	private List<String> departingCities = new ArrayList<>();
 	private List<String> destinationCities = new ArrayList<>();
+	private String message = "";
+	private boolean success = false;
+	private boolean citiesLoaded = false;
 	
 	public CreateRideBean() {
 		System.out.println("[DEBUG] CreateRideBean - Constructor called");
 	}
 	
-	public String getDriverName() {
-		return driverName;
+	public String getDriverEmail() {
+		return driverEmail;
 	}
 	
-	public void setDriverName(String driverName) {
-		this.driverName = driverName;
+	public void setDriverEmail(String driverEmail) {
+		this.driverEmail = driverEmail;
 	}
 	
 	public String getSelectedFrom() {
@@ -45,11 +50,14 @@ public class CreateRideBean implements Serializable {
 	
 	public void setSelectedFrom(String selectedFrom) {
 		this.selectedFrom = selectedFrom;
-		// Automatically load destinations when departure city changes
-		if (selectedFrom != null && !selectedFrom.isEmpty()) {
-			loadDestinations();
-		} else {
-			destinationCities.clear();
+		// Clear custom field when changing selection
+		if (!"Other".equals(selectedFrom)) {
+			customFromCity = "";
+		}
+		// Reload destination cities excluding the selected departure
+		loadDestinationCities();
+		// Clear destination if it's the same as the new departure
+		if (selectedFrom != null && selectedFrom.equals(selectedTo) && !"Other".equals(selectedFrom)) {
 			selectedTo = "";
 		}
 	}
@@ -60,6 +68,32 @@ public class CreateRideBean implements Serializable {
 	
 	public void setSelectedTo(String selectedTo) {
 		this.selectedTo = selectedTo;
+		// Clear custom field when changing selection
+		if (!"Other".equals(selectedTo)) {
+			customToCity = "";
+		}
+		// Reload departure cities excluding the selected destination
+		loadDepartingCities();
+		// Clear departure if it's the same as the new destination
+		if (selectedTo != null && selectedTo.equals(selectedFrom) && !"Other".equals(selectedTo)) {
+			selectedFrom = "";
+		}
+	}
+	
+	public String getCustomFromCity() {
+		return customFromCity;
+	}
+	
+	public void setCustomFromCity(String customFromCity) {
+		this.customFromCity = customFromCity;
+	}
+	
+	public String getCustomToCity() {
+		return customToCity;
+	}
+	
+	public void setCustomToCity(String customToCity) {
+		this.customToCity = customToCity;
 	}
 	
 	public Date getSelectedDate() {
@@ -88,8 +122,12 @@ public class CreateRideBean implements Serializable {
 	
 	public List<String> getDepartingCities() {
 		System.out.println("[DEBUG] CreateRideBean - getDepartingCities() called, current size: " + departingCities.size());
-		if (departingCities.isEmpty() && facadeBL != null) {
-			System.out.println("[DEBUG] CreateRideBean - departingCities is empty, triggering loadDepartingCities()");
+		if (facadeBL != null && !citiesLoaded) {
+			System.out.println("[DEBUG] CreateRideBean - Loading cities for the first time");
+			loadAllCities();
+			loadDepartingCities();
+		} else if (facadeBL != null && citiesLoaded) {
+			System.out.println("[DEBUG] CreateRideBean - Refreshing departing cities based on current selection");
 			loadDepartingCities();
 		}
 		return departingCities;
@@ -100,6 +138,15 @@ public class CreateRideBean implements Serializable {
 	}
 	
 	public List<String> getDestinationCities() {
+		System.out.println("[DEBUG] CreateRideBean - getDestinationCities() called, current size: " + destinationCities.size());
+		if (facadeBL != null && !citiesLoaded) {
+			System.out.println("[DEBUG] CreateRideBean - Loading cities for the first time");
+			loadAllCities();
+			loadDestinationCities();
+		} else if (facadeBL != null && citiesLoaded) {
+			System.out.println("[DEBUG] CreateRideBean - Refreshing destination cities based on current selection");
+			loadDestinationCities();
+		}
 		return destinationCities;
 	}
 	
@@ -107,47 +154,164 @@ public class CreateRideBean implements Serializable {
 		this.destinationCities = destinationCities;
 	}
 	
-	public String loadDepartingCities() {
-		System.out.println("[DEBUG] CreateRideBean - loadDepartingCities() called");
-		System.out.println("[DEBUG] CreateRideBean - facadeBL is " + (facadeBL != null ? "available" : "NULL"));
+	private List<String> allUniqueCities = new ArrayList<>();
+	
+	private void loadAllCities() {
+		System.out.println("[DEBUG] CreateRideBean - loadAllCities() called - loading all unique cities");
 		if (facadeBL != null) {
 			try {
-				departingCities = facadeBL.getDepartCities();
-				System.out.println("[DEBUG] CreateRideBean - Loaded departing cities (" + departingCities.size() + " cities): " + departingCities);
+				// Get all unique cities from both departure and destination
+				java.util.Set<String> allCitiesSet = new java.util.HashSet<>();
+				List<String> departCities = facadeBL.getDepartCities();
+				allCitiesSet.addAll(departCities);
+				// Add cities from all destinations
+				for (String city : departCities) {
+					try {
+						allCitiesSet.addAll(facadeBL.getDestinationCities(city));
+					} catch (Exception ex) {
+						// Ignore individual errors
+					}
+				}
+				allUniqueCities = new ArrayList<>(allCitiesSet);
+				java.util.Collections.sort(allUniqueCities);
+				citiesLoaded = true;
+				System.out.println("[DEBUG] CreateRideBean - Loaded and cached " + allUniqueCities.size() + " unique cities: " + allUniqueCities);
 			} catch (Exception e) {
-				System.err.println("[ERROR] CreateRideBean - Failed to load departing cities: " + e.getMessage());
-				departingCities = new ArrayList<>();
+				System.err.println("[ERROR] CreateRideBean - Failed to load all cities: " + e.getMessage());
+				e.printStackTrace();
+				allUniqueCities = new ArrayList<>();
 			}
-		} else {
-			System.out.println("[DEBUG] CreateRideBean - facadeBL is NULL, cannot load cities");
-			departingCities = new ArrayList<>();
 		}
+	}
+	
+	public String loadDepartingCities() {
+		System.out.println("[DEBUG] CreateRideBean - loadDepartingCities() called");
+		// Use cached cities and filter based on selection
+		departingCities = new ArrayList<>(allUniqueCities);
+		// Remove the selected destination city if it's not "Other"
+		if (selectedTo != null && !selectedTo.isEmpty() && !"Other".equals(selectedTo)) {
+			departingCities.remove(selectedTo);
+		}
+		// Add "Other" option at the end
+		if (!departingCities.contains("Other")) {
+			departingCities.add("Other");
+		}
+		System.out.println("[DEBUG] CreateRideBean - Filtered departing cities (" + departingCities.size() + " cities)");
 		return "";
 	}
 	
-	public String loadDestinations() {
-		System.out.println("[DEBUG] CreateRideBean - loadDestinations() called with selectedFrom: '" + selectedFrom + "'");
-		System.out.println("[DEBUG] CreateRideBean - facadeBL is " + (facadeBL != null ? "available" : "NULL"));
-		if (facadeBL != null) {
-			try {
-				destinationCities = facadeBL.getDestinationCities(selectedFrom);
-				System.out.println("[DEBUG] CreateRideBean - Loaded destinations (" + destinationCities.size() + " cities): " + destinationCities);
-			} catch (Exception e) {
-				System.err.println("[ERROR] CreateRideBean - Failed to load destinations: " + e.getMessage());
-				destinationCities = new ArrayList<>();
-			}
-		} else {
-			System.out.println("[DEBUG] CreateRideBean - facadeBL is NULL, cannot load destinations");
-			destinationCities = new ArrayList<>();
+	public String loadDestinationCities() {
+		System.out.println("[DEBUG] CreateRideBean - loadDestinationCities() called");
+		// Use cached cities and filter based on selection
+		destinationCities = new ArrayList<>(allUniqueCities);
+		// Remove the selected departure city if it's not "Other"
+		if (selectedFrom != null && !selectedFrom.isEmpty() && !"Other".equals(selectedFrom)) {
+			destinationCities.remove(selectedFrom);
 		}
+		// Add "Other" option at the end
+		if (!destinationCities.contains("Other")) {
+			destinationCities.add("Other");
+		}
+		System.out.println("[DEBUG] CreateRideBean - Filtered destination cities (" + destinationCities.size() + " cities)");
 		return "";
 	}
 	
 	public String createRide() {
 		System.out.println("[DEBUG] CreateRideBean - createRide() called");
-		System.out.println("[DEBUG] CreateRideBean - Driver: " + driverName + ", From: " + selectedFrom + 
+		System.out.println("[DEBUG] CreateRideBean - Driver: " + driverEmail + ", From: " + selectedFrom + 
 				", To: " + selectedTo + ", Date: " + selectedDate + ", Places: " + nplaces + ", Price: " + price);
-		// TODO: Implement ride creation logic using facadeBL
+		
+		// Reset message
+		message = "";
+		success = false;
+		
+		// Validation
+		if (driverEmail == null || driverEmail.trim().isEmpty()) {
+			message = "Driver email is required.";
+			return "";
+		}
+		if (selectedFrom == null || selectedFrom.isEmpty()) {
+			message = "Please select a departure city.";
+			return "";
+		}
+		if ("Other".equals(selectedFrom) && (customFromCity == null || customFromCity.trim().isEmpty())) {
+			message = "Please enter a custom departure city.";
+			return "";
+		}
+		if (selectedTo == null || selectedTo.isEmpty()) {
+			message = "Please select a destination city.";
+			return "";
+		}
+		if ("Other".equals(selectedTo) && (customToCity == null || customToCity.trim().isEmpty())) {
+			message = "Please enter a custom destination city.";
+			return "";
+		}
+		if (selectedDate == null) {
+			message = "Please select a date.";
+			return "";
+		}
+		if (nplaces == null || nplaces <= 0) {
+			message = "Number of places must be greater than 0.";
+			return "";
+		}
+		if (price == null || price <= 0) {
+			message = "Price must be greater than 0.";
+			return "";
+		}
+		
+		if (facadeBL != null) {
+			try {
+				// Determine actual city names (use custom if "Other" selected)
+				String fromCity = "Other".equals(selectedFrom) ? customFromCity : selectedFrom;
+				String toCity = "Other".equals(selectedTo) ? customToCity : selectedTo;
+				
+				// Call the business logic facade to create the ride
+				facadeBL.createRide(fromCity, toCity, selectedDate, nplaces.intValue(), price.floatValue(), driverEmail);
+				System.out.println("[DEBUG] CreateRideBean - Ride created successfully!");
+				
+				message = "Ride created successfully!";
+				success = true;
+				
+				// Clear the form after successful creation
+				driverEmail = "driver1@gmail.com";
+				selectedFrom = "";
+				selectedTo = "";
+				customFromCity = "";
+				customToCity = "";
+				selectedDate = new Date();
+				nplaces = 0;
+				price = 0.0;
+				destinationCities.clear();
+				// Reset flag to reload cities with new data
+				citiesLoaded = false;
+				allUniqueCities.clear();
+				
+			} catch (Exception e) {
+				System.err.println("[ERROR] CreateRideBean - Failed to create ride: " + e.getMessage());
+				e.printStackTrace();
+				message = "Error creating ride: " + e.getMessage();
+			}
+		} else {
+			System.err.println("[ERROR] CreateRideBean - Business logic facade is not available");
+			message = "System error: Business logic not available.";
+		}
+		
 		return "";
+	}
+	
+	public String getMessage() {
+		return message;
+	}
+	
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	
+	public boolean isSuccess() {
+		return success;
+	}
+	
+	public void setSuccess(boolean success) {
+		this.success = success;
 	}
 }
