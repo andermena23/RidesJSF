@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import domain.Ride;
-import domain.Driver;
+import domain.User;
 import exceptions.RideMustBeLaterThanTodayException;
 import exceptions.RideAlreadyExistException;
 
@@ -16,6 +16,41 @@ import exceptions.RideAlreadyExistException;
  */
 // @WebService
 public interface BLFacade {
+
+	/**
+	 * This method authenticates a user
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @return the authenticated user or null if authentication fails
+	 */
+	// @WebMethod
+	public User authenticateUser(String username, String password);
+	
+	/**
+	 * This method registers a new user
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @param email the email
+	 * @param role the role (driver, admin, or traveler)
+	 * @return the created user
+	 */
+	// @WebMethod
+	public User registerUser(String username, String password, String email, String role);
+	
+	/**
+	 * This method registers a new user with additional name parameter
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @param email the email
+	 * @param role the role (driver, admin, or traveler)
+	 * @param name the name (used for drivers)
+	 * @return the created user
+	 */
+	// @WebMethod
+	public User registerUser(String username, String password, String email, String role, String name);
 
 	/**
 	 * This method returns all the cities where rides depart

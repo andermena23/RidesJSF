@@ -7,14 +7,65 @@
 <f:view>
 	<h:head>
 		<title>RidesJSF</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 2em;
+				padding-bottom: 1em;
+				border-bottom: 2px solid #4CAF50;
+			}
+			.user-info {
+				text-align: right;
+			}
+			.btn-logout {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 0.5em 1em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.9em;
+			}
+			.btn-logout:hover {
+				background-color: #d32f2f;
+			}
+		</style>
 	</h:head>
 	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		
+		<!-- Redirect to login if not logged in -->
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{index.checkAuthentication}" />
+		</f:metadata>
+		
+		<div class="header">
+			<h2>RidesJSF - Select Option</h2>
+			<div class="user-info">
+				<p>#{msg['Login.Welcome']}, <strong>#{login.currentUser.username}</strong></p>
+				<p style="font-size: 0.9em; color: #666;">Role: #{login.currentUser.role.roleName}</p>
+				<h:form>
+					<h:commandButton value="#{msg['Login.Logout']}" 
+					                 action="#{login.logout}" 
+					                 styleClass="btn-logout" />
+				</h:form>
+			</div>
+		</div>
+		
 		<h:form>
 			<h3>Select Option</h3>
-			<p>
-				<h:commandButton value="Create Ride" action="#{index.createRide}"
-					style="font-size: 1em; padding: 0.5em 1em;" />
-			</p>
+			<h:panelGroup rendered="#{index.canCreateRide()}">
+				<p>
+					<h:commandButton value="Create Ride" action="#{index.createRide}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+			</h:panelGroup>
 			<p>
 				<h:commandButton value="Query Rides" action="#{index.queryRides}"
 					style="font-size: 1em; padding: 0.5em 1em;" />

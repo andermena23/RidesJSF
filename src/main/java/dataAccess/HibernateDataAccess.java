@@ -10,8 +10,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import configuration.UtilDate;
+import domain.AbstractUser;
+import domain.Admin;
 import domain.Driver;
 import domain.Ride;
+import domain.Traveler;
+import domain.User;
+import domain.UserRole;
 import exceptions.RideAlreadyExistException;
 import exceptions.RideMustBeLaterThanTodayException;
 
@@ -50,9 +55,9 @@ public class HibernateDataAccess {
 			}
 
 			// Create drivers
-			Driver driver1 = new Driver("driver1@gmail.com", "Aitor Fernandez");
-			Driver driver2 = new Driver("driver2@gmail.com", "Ane Gaztañaga");
-			Driver driver3 = new Driver("driver3@gmail.com", "Test driver");
+			Driver driver1 = new Driver("driver1", "password1", "driver1@gmail.com", "Aitor Fernandez");
+			Driver driver2 = new Driver("driver2", "password2", "driver2@gmail.com", "Ane Gaztañaga");
+			Driver driver3 = new Driver("driver3", "password3", "driver3@gmail.com", "Test driver");
 
 			// Create rides
 			driver1.addRide("Donostia", "Bilbo", UtilDate.newDate(year, month, 15), 4, 7);
@@ -69,6 +74,15 @@ public class HibernateDataAccess {
 			db.persist(driver1);
 			db.persist(driver2);
 			db.persist(driver3);
+			
+			// Create test users
+			Admin admin1 = new Admin("admin", "admin123", "admin@ridesjsf.com");
+			Traveler traveler1 = new Traveler("traveler1", "traveler123", "traveler1@ridesJSF.com");
+			Traveler traveler2 = new Traveler("traveler2", "traveler123", "traveler2@ridesJSF.com");
+			
+			db.persist(admin1);
+			db.persist(traveler1);
+			db.persist(traveler2);
 
 			db.getTransaction().commit();
 			System.out.println("Db initialized");
@@ -234,6 +248,100 @@ public class HibernateDataAccess {
 			db.close();
 		}
 		System.out.println("DataAccess closed");
+	}
+	
+	/**
+	 * This method authenticates a user
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @return the authenticated user or null if authentication fails
+	 */
+	public User authenticateUser(String username, String password) {
+		System.out.println(">> DataAccess: authenticateUser=> username= " + username);
+		
+		try {
+			TypedQuery<AbstractUser> query = db.createQuery(
+				"SELECT u FROM AbstractUser u WHERE u.username=?1 AND u.password=?2", 
+				AbstractUser.class);
+			query.setParameter(1, username);
+			query.setParameter(2, password);
+			
+			List<AbstractUser> users = query.getResultList();
+			if (users.isEmpty()) {
+				return null;
+			}
+			return users.get(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * This method registers a new user
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @param email the email
+	 * @param role the role (driver, admin, or traveler)
+	 * @return the created user
+	 */
+	public User registerUser(String username, String password, String email, String role) {
+		return registerUser(username, password, email, role, null);
+	}
+	
+	/**
+	 * This method registers a new user with optional name
+	 * 
+	 * @param username the username
+	 * @param password the password
+	 * @param email the email
+	 * @param role the role (driver, admin, or traveler)
+	 * @param name the name (used for drivers, can be null)
+	 * @return the created user
+	 */
+	public User registerUser(String username, String password, String email, String role, String name) {
+		System.out.println(">> DataAccess: registerUser=> username= " + username + ", role= " + role + ", name= " + name);
+		
+		try {
+			db.getTransaction().begin();
+			
+			// Check if user already exists
+			AbstractUser existingUser = db.find(AbstractUser.class, username);
+			if (existingUser != null) {
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Create appropriate user type based on role
+			UserRole userRole = UserRole.fromString(role);
+			User user;
+			switch (userRole) {
+				case DRIVER:
+					String driverName = (name != null && !name.trim().isEmpty()) ? name : username;
+					user = new Driver(username, password, email, driverName);
+					break;
+				case ADMIN:
+					user = new Admin(username, password, email);
+					break;
+				case TRAVELER:
+				default:
+					user = new Traveler(username, password, email);
+					break;
+			}
+			
+			db.persist(user);
+			db.getTransaction().commit();
+			
+			return user;
+		} catch (Exception e) {
+			if (db.getTransaction().isActive()) {
+				db.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

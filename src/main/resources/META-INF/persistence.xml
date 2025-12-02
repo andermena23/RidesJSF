@@ -9,7 +9,10 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         
         <!-- Entity classes -->
+        <class>domain.AbstractUser</class>
         <class>domain.Driver</class>
+        <class>domain.Admin</class>
+        <class>domain.Traveler</class>
         <class>domain.Ride</class>
         
         <properties>

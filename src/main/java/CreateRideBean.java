@@ -32,8 +32,28 @@ public class CreateRideBean implements Serializable {
 	private boolean success = false;
 	private boolean citiesLoaded = false;
 	
+	@jakarta.inject.Inject
+	private LoginBean login;
+	
 	public CreateRideBean() {
 		System.out.println("[DEBUG] CreateRideBean - Constructor called");
+	}
+	
+	public void checkAccess() throws java.io.IOException {
+		System.out.println("[DEBUG] CreateRideBean - Checking access");
+		if (login == null || !login.isLoggedIn()) {
+			System.out.println("[DEBUG] CreateRideBean - User not logged in, redirecting to login");
+			jakarta.faces.context.FacesContext.getCurrentInstance().getExternalContext().redirect("Login.xhtml");
+			return;
+		}
+		
+		String role = login.getCurrentUser().getRole().getRoleName();
+		System.out.println("[DEBUG] CreateRideBean - User role: " + role);
+		
+		if (!"driver".equals(role) && !"admin".equals(role)) {
+			System.out.println("[DEBUG] CreateRideBean - User is not authorized, redirecting to index");
+			jakarta.faces.context.FacesContext.getCurrentInstance().getExternalContext().redirect("Index.xhtml");
+		}
 	}
 	
 	public String getDriverEmail() {

@@ -30,6 +30,6 @@
 	</context-param>
 	<!-- Hasierako JSFak -->
 	<welcome-file-list>
-		<welcome-file>Index.xhtml</welcome-file>
+		<welcome-file>Login.xhtml</welcome-file>
 	</welcome-file-list>
 </web-app>

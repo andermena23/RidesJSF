@@ -3,8 +3,11 @@ package businessLogic;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.enterprise.inject.Vetoed;
+
 import dataAccess.HibernateDataAccess;
 import domain.Ride;
+import domain.User;
 import exceptions.RideMustBeLaterThanTodayException;
 import exceptions.RideAlreadyExistException;
 
@@ -12,6 +15,7 @@ import exceptions.RideAlreadyExistException;
  * It implements the business logic as a web service.
  */
 // @WebService(endpointInterface = "businessLogic.BLFacade")
+@Vetoed
 public class BLFacadeImplementation implements BLFacade {
 	private HibernateDataAccess dbManager;
 
@@ -112,6 +116,44 @@ public class BLFacadeImplementation implements BLFacade {
 		} finally {
 			dbManager.close();
 		}
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public User authenticateUser(String username, String password) {
+		User user = null;
+		try {
+			dbManager.open();
+			user = dbManager.authenticateUser(username, password);
+		} finally {
+			dbManager.close();
+		}
+		return user;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public User registerUser(String username, String password, String email, String role) {
+		return registerUser(username, password, email, role, null);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public User registerUser(String username, String password, String email, String role, String name) {
+		User user = null;
+		try {
+			dbManager.open();
+			user = dbManager.registerUser(username, password, email, role, name);
+		} finally {
+			dbManager.close();
+		}
+		return user;
 	}
 
 }

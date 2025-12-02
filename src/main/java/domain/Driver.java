@@ -1,6 +1,5 @@
 package domain;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,15 +7,13 @@ import java.util.Set;
 import javax.persistence.*;
 
 @Entity
-public class Driver implements Serializable {
+@DiscriminatorValue("DRIVER")
+public class Driver extends AbstractUser {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	@Id
-	private String email;
+	
 	private String name;
+	
 	@OneToMany(mappedBy = "driver", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Ride> rides;
 
@@ -25,18 +22,10 @@ public class Driver implements Serializable {
 		this.rides = new HashSet<>();
 	}
 
-	public Driver(String email, String name) {
-		this.email = email;
+	public Driver(String username, String password, String email, String name) {
+		super(username, password, email);
 		this.name = name;
 		this.rides = new HashSet<>();
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
 	}
 
 	public String getName() {
@@ -46,9 +35,15 @@ public class Driver implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@Override
+	public UserRole getRole() {
+		return UserRole.DRIVER;
+	}
 
+	@Override
 	public String toString() {
-		return email + ";" + name + rides;
+		return getEmail() + ";" + name + rides;
 	}
 
 	/**
@@ -87,16 +82,8 @@ public class Driver implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Driver other = (Driver) obj;
-		if (email != other.email)
-			return false;
-		return true;
+		// Use the parent class equals which compares by username
+		return super.equals(obj);
 	}
 
 	public Ride removeRide(String from, String to, Date date) {
