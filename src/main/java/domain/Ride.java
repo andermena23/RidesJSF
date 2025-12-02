@@ -4,59 +4,51 @@ import java.io.*;
 import java.util.Date;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-
-@SuppressWarnings("serial")
-@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 public class Ride implements Serializable {
-	@XmlID
-	@Id 
-	@XmlJavaTypeAdapter(IntegerAdapter.class)
-	@GeneratedValue
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer rideNumber;
+	@Column(name = "`from`")
 	private String from;
+	@Column(name = "`to`")
 	private String to;
 	private int nPlaces;
+	@Column(nullable=false)
 	private Date date;
 	private float price;
-	
-	private Driver driver;  
-	
-	public Ride(){
+
+	@ManyToOne(targetEntity = Driver.class, fetch = FetchType.EAGER)
+	private Driver driver;
+
+	public Ride() {
 		super();
 	}
-	
+
 	public Ride(Integer rideNumber, String from, String to, Date date, int nPlaces, float price, Driver driver) {
 		super();
 		this.rideNumber = rideNumber;
 		this.from = from;
 		this.to = to;
 		this.nPlaces = nPlaces;
-		this.date=date;
-		this.price=price;
+		this.date = date;
+		this.price = price;
 		this.driver = driver;
 	}
 
-	
-
-	public Ride(String from, String to,  Date date, int nPlaces, float price, Driver driver) {
+	public Ride(String from, String to, Date date, int nPlaces, float price, Driver driver) {
 		super();
 		this.from = from;
 		this.to = to;
 		this.nPlaces = nPlaces;
-		this.date=date;
-		this.price=price;
+		this.date = date;
+		this.price = price;
 		this.driver = driver;
 	}
-	
+
 	/**
-	 * Get the  number of the ride
+	 * Get the number of the ride
 	 * 
 	 * @return the ride number
 	 */
@@ -64,19 +56,18 @@ public class Ride implements Serializable {
 		return rideNumber;
 	}
 
-	
 	/**
 	 * Set the ride number to a ride
 	 * 
-	 * @param ride Number to be set	 */
-	
+	 * @param ride Number to be set
+	 */
+
 	public void setRideNumber(Integer rideNumber) {
 		this.rideNumber = rideNumber;
 	}
 
-
 	/**
-	 * Get the origin  of the ride
+	 * Get the origin of the ride
 	 * 
 	 * @return the origin location
 	 */
@@ -85,19 +76,18 @@ public class Ride implements Serializable {
 		return from;
 	}
 
-
 	/**
 	 * Set the origin of the ride
 	 * 
 	 * @param origin to be set
-	 */	
-	
+	 */
+
 	public void setFrom(String origin) {
 		this.from = origin;
 	}
 
 	/**
-	 * Get the destination  of the ride
+	 * Get the destination of the ride
 	 * 
 	 * @return the destination location
 	 */
@@ -106,12 +96,11 @@ public class Ride implements Serializable {
 		return to;
 	}
 
-
 	/**
 	 * Set the origin of the ride
 	 * 
 	 * @param destination to be set
-	 */	
+	 */
 	public void setTo(String destination) {
 		this.to = destination;
 	}
@@ -121,25 +110,25 @@ public class Ride implements Serializable {
 	 * 
 	 * @return the available places
 	 */
-	
+
 	/**
-	 * Get the date  of the ride
+	 * Get the date of the ride
 	 * 
-	 * @return the ride date 
+	 * @return the ride date
 	 */
 	public Date getDate() {
 		return date;
 	}
+
 	/**
 	 * Set the date of the ride
 	 * 
 	 * @param date to be set
-	 */	
+	 */
 	public void setDate(Date date) {
 		this.date = date;
 	}
 
-	
 	public float getnPlaces() {
 		return nPlaces;
 	}
@@ -147,7 +136,7 @@ public class Ride implements Serializable {
 	/**
 	 * Set the free places of the ride
 	 * 
-	 * @param  nPlaces places to be set
+	 * @param nPlaces places to be set
 	 */
 
 	public void setBetMinimum(int nPlaces) {
@@ -180,14 +169,8 @@ public class Ride implements Serializable {
 		this.price = price;
 	}
 
-
-
-	public String toString(){
-		return rideNumber+";"+";"+from+";"+to+";"+date;  
+	public String toString() {
+		return rideNumber + ";" + ";" + from + ";" + to + ";" + date;
 	}
 
-
-
-
-	
 }
