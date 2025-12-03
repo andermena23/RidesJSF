@@ -5,7 +5,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:p="http://primefaces.org/ui">
-<f:view>
+<f:view locale="#{index.language}">
 	<h:head>
 		<title>Create Ride</title>
 		<style>
@@ -108,12 +108,13 @@
 		</style>
 	</h:head>
 	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
 		<f:metadata>
 			<f:event type="preRenderView" listener="#{createRide.checkAccess}" />
 		</f:metadata>
 		
 		<h:form id="createForm">
-			<h3>Create Ride</h3>
+			<h3>#{msg['CreateRide.Title']}</h3>
 			
 			<h:panelGroup rendered="#{not empty createRide.message}">
 				<p styleClass="#{createRide.success ? 'message-success' : 'message-error'}">
@@ -122,64 +123,73 @@
 			</h:panelGroup>
 			
 			<h:panelGrid columns="2" style="margin-bottom: 20px;">
-				<h:outputLabel value="Driver Email: " for="driverEmail" />
-				<h:inputText id="driverEmail" value="#{createRide.driverEmail}" required="true" readonly="true" style="background-color: #e9ecef; color: #6c757d;" />
+				<h:outputLabel value="#{msg['CreateRide.DriverEmail']}: " />
+				<h:outputText value="#{login.currentUser.email}" style="font-weight: bold; color: #495057;" />
 				
-				<h:outputLabel value="From: " for="fromCity" />
+				<h:outputLabel value="#{msg['CreateRide.From']}: " for="fromCity" />
 				<h:panelGroup>
 					<h:selectOneMenu id="fromCity" value="#{createRide.selectedFrom}">
-						<f:selectItem itemLabel="-- Select City --" itemValue="" />
+						<f:selectItem itemLabel="#{msg['CreateRide.SelectCity']}" itemValue="" />
 						<f:selectItems value="#{createRide.departingCities}" />
 						<p:ajax event="change" update="customFromPanel toCity" process="@this" />
 					</h:selectOneMenu>
 					<h:panelGroup id="customFromPanel" style="display: block; margin-top: 5px;">
 						<h:inputText id="customFrom" value="#{createRide.customFromCity}" 
 									 rendered="#{createRide.selectedFrom eq 'Other'}" 
-									 placeholder="Enter city name" 
+									 placeholder="#{msg['CreateRide.EnterCityName']}" 
 									 style="width: 200px;" />
 					</h:panelGroup>
 				</h:panelGroup>
 				
-				<h:outputLabel value="To: " for="toCity" />
+				<h:outputLabel value="#{msg['CreateRide.To']}: " for="toCity" />
 				<h:panelGroup>
 					<h:selectOneMenu id="toCity" value="#{createRide.selectedTo}">
-						<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
+						<f:selectItem itemLabel="#{msg['CreateRide.SelectDestination']}" itemValue="" />
 						<f:selectItems value="#{createRide.destinationCities}" />
 						<p:ajax event="change" update="customToPanel fromCity" process="@this" />
 					</h:selectOneMenu>
 					<h:panelGroup id="customToPanel" style="display: block; margin-top: 5px;">
 						<h:inputText id="customTo" value="#{createRide.customToCity}" 
 									 rendered="#{createRide.selectedTo eq 'Other'}" 
-									 placeholder="Enter city name" 
+									 placeholder="#{msg['CreateRide.EnterCityName']}" 
 									 style="width: 200px;" />
 					</h:panelGroup>
 				</h:panelGroup>
 				
-				<h:outputLabel value="Date: " for="dateCalendar" />
+				<h:outputLabel value="#{msg['CreateRide.Date']}: " for="dateCalendar" />
 				<p:calendar id="dateCalendar" 
 							value="#{createRide.selectedDate}" 
 							navigator="true" 
 							mode="inline"
 							pattern="dd/MM/yyyy" />
 				
-				<h:outputLabel value="Number of Places: " for="nplaces" />
+				<h:outputLabel value="#{msg['CreateRide.NumberOfPlaces']}: " for="nplaces" />
 				<h:inputText id="nplaces" value="#{createRide.nplaces}" required="true">
 					<f:convertNumber integerOnly="true" />
 				</h:inputText>
 				
-				<h:outputLabel value="Price: " for="price" />
+				<h:outputLabel value="#{msg['CreateRide.Price']}: " for="price" />
 				<h:inputText id="price" value="#{createRide.price}" required="true">
 					<f:convertNumber type="number" minFractionDigits="2" maxFractionDigits="2" />
 				</h:inputText>
 			</h:panelGrid>
 			
 			<p>
-				<h:commandButton value="Create Ride" action="#{createRide.createRide}"
+				<h:commandButton value="#{msg['CreateRide.CreateRideButton']}" action="#{createRide.createRide}"
 					style="font-size: 1em; padding: 0.5em 1em; margin-right: 10px;">
 					<f:ajax execute="@form" render="@form" />
 				</h:commandButton>
-				<h:commandButton value="Back to Index" action="Index" immediate="true"
+				<h:commandButton value="#{msg['CreateRide.BackToIndex']}" action="Index" immediate="true"
 					style="font-size: 1em; padding: 0.5em 1em;" />
+			</p>
+			
+			<p>
+				<h:selectOneRadio value="#{index.language}">
+					<f:selectItem itemValue="eu" itemLabel="Euskara" />
+					<f:selectItem itemValue="es" itemLabel="Castellano" />
+					<f:selectItem itemValue="en" itemLabel="English" />
+					<f:ajax render="@form" />
+				</h:selectOneRadio>
 			</p>
 		</h:form>
 	</h:body>

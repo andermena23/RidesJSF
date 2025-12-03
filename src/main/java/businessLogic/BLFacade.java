@@ -89,6 +89,14 @@ public interface BLFacade {
 			throws RideMustBeLaterThanTodayException, RideAlreadyExistException;
 
 	/**
+	 * This method retrieves all rides
+	 * 
+	 * @return collection of all rides
+	 */
+	// @WebMethod
+	public List<Ride> getAllRides();
+	
+	/**
 	 * This method retrieves the rides from two locations on a given date
 	 * 
 	 * @param from the origin location of a ride
@@ -110,6 +118,18 @@ public interface BLFacade {
 	 */
 	// @WebMethod
 	public List<Date> getThisMonthDatesWithRides(String from, String to, Date date);
+
+	/**
+	 * This method removes a ride for a driver
+	 * 
+	 * @param from        the origin location of a ride
+	 * @param to          the destination location of a ride
+	 * @param date        the date of the ride
+	 * @param driverEmail the email of the driver
+	 * @return true if the ride was removed, false otherwise
+	 */
+	// @WebMethod
+	public boolean removeRide(String from, String to, Date date, String driverEmail);
 
 	/**
 	 * This method calls the data access to initialize the database with some events

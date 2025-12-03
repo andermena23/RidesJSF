@@ -39,12 +39,12 @@ public class IndexBean implements Serializable {
 			System.out.println("[DEBUG] User " + login.getCurrentUser().getUsername() + " cannot create rides");
 			return null; // Stay on same page
 		}
-		return "CreateRide";
+		return "CreateRide?faces-redirect=true";
 	}
 	
 	public String queryRides() {
 		System.out.println("queryRides");
-		return "QueryRides";
+		return "QueryRides?faces-redirect=true";
 	}
 	
 	public boolean canCreateRide() {
@@ -82,5 +82,27 @@ public class IndexBean implements Serializable {
 	
 	public void setLanguage(String language) {
 		this.language = language;
+		changeLocale(language);
+	}
+	
+	public void changeLocale(String language) {
+		FacesContext context = FacesContext.getCurrentInstance();
+		java.util.Locale locale;
+		
+		switch (language) {
+			case "eu":
+				locale = java.util.Locale.forLanguageTag("eu");
+				break;
+			case "es":
+				locale = java.util.Locale.forLanguageTag("es");
+				break;
+			case "en":
+			default:
+				locale = java.util.Locale.ENGLISH;
+				break;
+		}
+		
+		context.getViewRoot().setLocale(locale);
+		System.out.println("[DEBUG] Changed locale to: " + locale);
 	}
 }

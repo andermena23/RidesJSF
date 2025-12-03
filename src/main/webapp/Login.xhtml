@@ -4,7 +4,7 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
-<f:view>
+<f:view locale="#{index.language}">
 	<h:head>
 		<title>#{msg['Login.Title']}</title>
 		<style>
@@ -144,6 +144,7 @@
 						<f:selectItem itemValue="eu" itemLabel="Euskara" />
 						<f:selectItem itemValue="es" itemLabel="Castellano" />
 						<f:selectItem itemValue="en" itemLabel="English" />
+						<f:ajax render="@form" />
 					</h:selectOneRadio>
 				</div>
 			</h:form>

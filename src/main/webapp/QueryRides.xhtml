@@ -5,7 +5,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:p="http://primefaces.org/ui">
-<f:view>
+<f:view locale="#{index.language}">
 	<h:head>
 		<title>Query Rides</title>
 		<style>
@@ -163,22 +163,23 @@
 		</script>
 	</h:head>
 	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
 		<h:form id="queryForm">
-			<h3>Query Rides</h3>
+			<h3>#{msg['QueryRides.Title']}</h3>
 			
 			<h:inputHidden id="datesJson" value="#{queryRides.availableDatesJson}" />
 			
 			<h:panelGrid columns="2" style="margin-bottom: 20px;">
-				<h:outputLabel value="From: " for="fromCity" />
+				<h:outputLabel value="#{msg['QueryRides.From']}: " for="fromCity" />
 				<h:selectOneMenu id="fromCity" value="#{queryRides.selectedFrom}">
-					<f:selectItem itemLabel="-- Select City --" itemValue="" />
+					<f:selectItem itemLabel="#{msg['QueryRides.SelectCity']}" itemValue="" />
 					<f:selectItems value="#{queryRides.departingCities}" />
 					<p:ajax event="change" update="toCity calendarPanel hiddenDates" process="@this" oncomplete="refreshCalendarDates()" />
 				</h:selectOneMenu>
 				
-				<h:outputLabel value="To: " for="toCity" />
+				<h:outputLabel value="#{msg['QueryRides.To']}: " for="toCity" />
 				<h:selectOneMenu id="toCity" value="#{queryRides.selectedTo}" disabled="#{empty queryRides.destinationCities}">
-					<f:selectItem itemLabel="-- Select Destination --" itemValue="" />
+					<f:selectItem itemLabel="#{msg['QueryRides.SelectDestination']}" itemValue="" />
 					<f:selectItems value="#{queryRides.destinationCities}" />
 					<p:ajax event="change" update="calendarPanel hiddenDates" process="@this" listener="#{queryRides.loadAvailableDates}" oncomplete="refreshCalendarDates()" />
 				</h:selectOneMenu>
@@ -186,7 +187,7 @@
 			
 			<h:panelGroup id="calendarPanel">
 				<h:panelGroup rendered="#{not empty queryRides.selectedFrom and not empty queryRides.selectedTo}">
-					<h:outputLabel value="Data: " style="display: block; margin-bottom: 10px;" />
+					<h:outputLabel value="#{msg['QueryRides.Date']}: " style="display: block; margin-bottom: 10px;" />
 					<p:calendar id="dateCalendar" 
 								value="#{queryRides.selectedDate}" 
 								navigator="true" 
@@ -203,38 +204,38 @@
 			
 			<h:panelGroup id="ridesTable">
 				<h:panelGroup rendered="#{not empty queryRides.rides}">
-					<h3 style="margin-top: 30px;">Available Rides for #{queryRides.selectedDate}</h3>
+					<h3 style="margin-top: 30px;">#{msg['QueryRides.AvailableRides']}</h3>
 					<h:dataTable value="#{queryRides.rides}" var="ride" 
 								 styleClass="rides-table" 
 								 headerClass="rides-table-header" 
 								 rowClasses="rides-table-row-odd,rides-table-row-even"
 								 style="border-collapse: collapse; width: 100%; margin-top: 10px; border: 1px solid #ddd;">
 						<h:column>
-							<f:facet name="header">Driver</f:facet>
+							<f:facet name="header">#{msg['QueryRides.Driver']}</f:facet>
 							#{ride.driver.name}
 						</h:column>
 						<h:column>
-							<f:facet name="header">From</f:facet>
+							<f:facet name="header">#{msg['QueryRides.FromColumn']}</f:facet>
 							#{ride.from}
 						</h:column>
 						<h:column>
-							<f:facet name="header">To</f:facet>
+							<f:facet name="header">#{msg['QueryRides.ToColumn']}</f:facet>
 							#{ride.to}
 						</h:column>
 						<h:column>
-							<f:facet name="header">Date</f:facet>
+							<f:facet name="header">#{msg['QueryRides.DateColumn']}</f:facet>
 							<h:outputText value="#{ride.date}">
 								<f:convertDateTime pattern="dd/MM/yyyy" />
 							</h:outputText>
 						</h:column>
 					<h:column>
-						<f:facet name="header">Places</f:facet>
+						<f:facet name="header">#{msg['QueryRides.Places']}</f:facet>
 						<h:outputText value="#{ride.nPlaces}">
 							<f:convertNumber integerOnly="true" />
 						</h:outputText>
 					</h:column>
 						<h:column>
-							<f:facet name="header">Price</f:facet>
+							<f:facet name="header">#{msg['QueryRides.Price']}</f:facet>
 							<h:outputText value="#{ride.price}">
 								<f:convertNumber type="currency" currencySymbol="€" />
 							</h:outputText>
@@ -266,8 +267,17 @@
 			</script>
 			
 			<p>
-				<h:commandButton value="Back to Index" action="Index"
+				<h:commandButton value="#{msg['QueryRides.BackToIndex']}" action="Index"
 					style="font-size: 1em; padding: 0.5em 1em;" />
+			</p>
+			
+			<p>
+				<h:selectOneRadio value="#{index.language}">
+					<f:selectItem itemValue="eu" itemLabel="Euskara" />
+					<f:selectItem itemValue="es" itemLabel="Castellano" />
+					<f:selectItem itemValue="en" itemLabel="English" />
+					<f:ajax render="@form" />
+				</h:selectOneRadio>
 			</p>
 		</h:form>
 	</h:body>

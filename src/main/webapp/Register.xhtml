@@ -4,7 +4,7 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
-<f:view>
+<f:view locale="#{index.language}">
 	<h:head>
 		<title>#{msg['Register.Title']}</title>
 		<style>
@@ -197,6 +197,15 @@
 				<div class="login-link">
 					#{msg['Register.AlreadyHaveAccount']} 
 					<h:link outcome="Login" value="#{msg['Register.LoginLink']}" />
+				</div>
+				
+				<div class="language-selector">
+					<h:selectOneRadio value="#{index.language}">
+						<f:selectItem itemValue="eu" itemLabel="Euskara" />
+						<f:selectItem itemValue="es" itemLabel="Castellano" />
+						<f:selectItem itemValue="en" itemLabel="English" />
+						<f:ajax render="@form" />
+					</h:selectOneRadio>
 				</div>
 			</h:form>
 		</div>

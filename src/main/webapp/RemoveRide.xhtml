@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>Remove Ride</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+			}
+			.message-success {
+				padding: 10px;
+				margin: 10px 0;
+				border-radius: 5px;
+				background-color: #d4edda;
+				color: #155724;
+				border: 1px solid #c3e6cb;
+			}
+			.message-error {
+				padding: 10px;
+				margin: 10px 0;
+				border-radius: 5px;
+				background-color: #f8d7da;
+				color: #721c24;
+				border: 1px solid #f5c6cb;
+			}
+			.rides-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 20px 0;
+			}
+			.rides-table th, .rides-table td {
+				border: 1px solid #ddd;
+				padding: 12px;
+				text-align: left;
+			}
+			.rides-table th {
+				background-color: #4CAF50;
+				color: white;
+			}
+			.rides-table tr:nth-child(even) {
+				background-color: #f2f2f2;
+			}
+			.rides-table tr:hover {
+				background-color: #ddd;
+			}
+			.btn-remove {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 1em;
+			}
+			.btn-remove:hover {
+				background-color: #d32f2f;
+			}
+			.btn-remove:disabled {
+				background-color: #ccc;
+				cursor: not-allowed;
+			}
+			.available-date a {
+				background-color: #4CAF50 !important;
+				color: white !important;
+				font-weight: bold !important;
+				border-radius: 50% !important;
+				width: 30px !important;
+				height: 30px !important;
+				line-height: 30px !important;
+				text-align: center !important;
+				display: inline-flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				padding: 0 !important;
+			}
+			.available-date a:hover {
+				background-color: #45a049 !important;
+			}
+		</style>
+		<script type="text/javascript">
+		//<![CDATA[
+			var availableDates = [];
+			
+			function updateAvailableDates(datesJson) {
+				availableDates = JSON.parse(datesJson);
+				console.log('Available dates updated:', availableDates);
+			}
+			
+			function isDateAvailable(date) {
+				var dateStr = formatDate(date);
+				var isAvailable = availableDates.indexOf(dateStr) !== -1;
+				// Return array: [enabled, cssClass, tooltip]
+				return [isAvailable, isAvailable ? 'available-date' : '', ''];
+			}
+			
+			function formatDate(date) {
+				var d = new Date(date);
+				var month = '' + (d.getMonth() + 1);
+				var day = '' + d.getDate();
+				var year = d.getFullYear();
+				
+				if (month.length < 2) month = '0' + month;
+				if (day.length < 2) day = '0' + day;
+				
+				return [year, month, day].join('-');
+			}
+			
+			function refreshCalendarDates() {
+				var datesJson = document.getElementById('removeForm:hiddenDates').value;
+				if (datesJson) {
+					availableDates = JSON.parse(datesJson);
+					console.log('Dates refreshed:', availableDates);
+					if (typeof PF !== 'undefined') {
+						var widget = PF('calendarWidget');
+						if (widget && widget.cfg && widget.cfg.popup === false) {
+							// Only refresh inline calendars
+							setTimeout(function() {
+								widget.refresh();
+							}, 50);
+						}
+					}
+				}
+			}
+		//]]>
+		</script>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{removeRide.checkAccess}" />
+		</f:metadata>
+		
+		<h:form id="removeForm">
+			<h3>#{msg['RemoveRide.Title']}</h3>
+			
+			<h:panelGroup rendered="#{not empty removeRide.message}">
+				<p styleClass="#{removeRide.success ? 'message-success' : 'message-error'}">
+					#{removeRide.message}
+				</p>
+			</h:panelGroup>
+			
+			<p>
+				<strong>#{msg['RemoveRide.LoggedInAs']}:</strong> #{login.currentUser.email}
+			</p>
+			
+			<h:outputLabel value="#{msg['RemoveRide.SelectDate']}: " style="display: block; margin-bottom: 10px; font-weight: bold;" />
+			<h:inputHidden id="hiddenDates" value="#{removeRide.availableDatesJson}" />
+			<p:calendar id="dateCalendar" 
+						value="#{removeRide.selectedDate}" 
+						navigator="true" 
+						mode="inline"
+						pattern="dd/MM/yyyy"
+						beforeShowDay="isDateAvailable"
+						widgetVar="calendarWidget"
+						oncomplete="refreshCalendarDates()">
+				<p:ajax event="dateSelect" listener="#{removeRide.onDateSelect}" update="ridesTable" />
+				<p:ajax event="viewChange" oncomplete="refreshCalendarDates()" />
+			</p:calendar>
+			<script type="text/javascript">
+			//<![CDATA[
+				// Initialize dates when page loads
+				refreshCalendarDates();
+			//]]>
+			</script>
+			
+			<h:panelGroup id="ridesTable">
+				<h:panelGroup rendered="#{not empty removeRide.rides}">
+					<h3 style="margin-top: 30px;">#{msg['RemoveRide.RidesForDate']}</h3>
+					<p:dataTable value="#{removeRide.rides}" var="ride" 
+								 selection="#{removeRide.selectedRides}"
+								 rowKey="#{ride.from}-#{ride.to}-#{ride.date.time}-#{ride.driver.email}"
+								 styleClass="rides-table">
+						<p:column selectionMode="multiple" style="width:50px; text-align:center" />
+						<p:column headerText="#{msg['RemoveRide.Driver']}">
+							#{ride.driver.name}
+						</p:column>
+						<p:column headerText="#{msg['RemoveRide.FromColumn']}">
+							#{ride.from}
+						</p:column>
+						<p:column headerText="#{msg['RemoveRide.ToColumn']}">
+							#{ride.to}
+						</p:column>
+						<p:column headerText="#{msg['RemoveRide.Places']}">
+							<h:outputText value="#{ride.nPlaces}">
+								<f:convertNumber integerOnly="true" />
+							</h:outputText>
+						</p:column>
+						<p:column headerText="#{msg['RemoveRide.Price']}">
+							<h:outputText value="#{ride.price}">
+								<f:convertNumber type="currency" currencySymbol="€" />
+							</h:outputText>
+						</p:column>
+					</p:dataTable>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{empty removeRide.rides and removeRide.selectedDate ne null}">
+					<p style="margin-top: 20px; font-style: italic; color: #666;">#{msg['RemoveRide.NoRidesFound']}</p>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<p style="margin-top: 20px;">
+				<h:commandButton value="#{msg['RemoveRide.RemoveSelectedButton']}" 
+								 action="#{removeRide.removeSelectedRides}" 
+								 styleClass="btn-remove">
+					<f:ajax execute="@form" render="@form" />
+				</h:commandButton>
+			</p>
+			
+			<p style="margin-top: 20px;">
+				<h:commandButton value="#{msg['RemoveRide.BackToIndex']}" action="Index"
+					style="font-size: 1em; padding: 0.5em 1em;" />
+			</p>
+			
+			<p>
+				<h:selectOneRadio value="#{index.language}">
+					<f:selectItem itemValue="eu" itemLabel="Euskara" />
+					<f:selectItem itemValue="es" itemLabel="Castellano" />
+					<f:selectItem itemValue="en" itemLabel="English" />
+					<f:ajax render="@form" />
+				</h:selectOneRadio>
+			</p>
+		</h:form>
+	</h:body>
+</f:view>
+</html>

@@ -17,7 +17,6 @@ public class CreateRideBean implements Serializable {
 	@Named("businessLogic")
 	private BLFacade facadeBL;
 	
-	private String driverEmail = "driver1@gmail.com";
 	private String selectedFrom = "";
 	private String selectedTo = "";
 	private String customFromCity = "";
@@ -54,14 +53,6 @@ public class CreateRideBean implements Serializable {
 			System.out.println("[DEBUG] CreateRideBean - User is not authorized, redirecting to index");
 			jakarta.faces.context.FacesContext.getCurrentInstance().getExternalContext().redirect("Index.xhtml");
 		}
-	}
-	
-	public String getDriverEmail() {
-		return driverEmail;
-	}
-	
-	public void setDriverEmail(String driverEmail) {
-		this.driverEmail = driverEmail;
 	}
 	
 	public String getSelectedFrom() {
@@ -238,6 +229,9 @@ public class CreateRideBean implements Serializable {
 	
 	public String createRide() {
 		System.out.println("[DEBUG] CreateRideBean - createRide() called");
+		
+		// Get logged-in user's email
+		String driverEmail = login.getCurrentUser().getEmail();
 		System.out.println("[DEBUG] CreateRideBean - Driver: " + driverEmail + ", From: " + selectedFrom + 
 				", To: " + selectedTo + ", Date: " + selectedDate + ", Places: " + nplaces + ", Price: " + price);
 		
@@ -293,7 +287,6 @@ public class CreateRideBean implements Serializable {
 				success = true;
 				
 				// Clear the form after successful creation
-				driverEmail = "driver1@gmail.com";
 				selectedFrom = "";
 				selectedTo = "";
 				customFromCity = "";

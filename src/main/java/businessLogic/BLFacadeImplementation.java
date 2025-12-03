@@ -79,6 +79,21 @@ public class BLFacadeImplementation implements BLFacade {
 	 * {@inheritDoc}
 	 */
 	// @WebMethod
+	public List<Ride> getAllRides() {
+		List<Ride> rides = null;
+		try {
+			dbManager.open();
+			rides = dbManager.getAllRides();
+		} finally {
+			dbManager.close();
+		}
+		return rides;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
 	public List<Ride> getRides(String from, String to, Date date) {
 		List<Ride> rides = null;
 		try {
@@ -103,6 +118,21 @@ public class BLFacadeImplementation implements BLFacade {
 			dbManager.close();
 		}
 		return dates;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public boolean removeRide(String from, String to, Date date, String driverEmail) {
+		boolean result = false;
+		try {
+			dbManager.open();
+			result = dbManager.removeRide(from, to, date, driverEmail);
+		} finally {
+			dbManager.close();
+		}
+		return result;
 	}
 
 	/**

@@ -182,6 +182,23 @@ public class HibernateDataAccess {
 	}
 
 	/**
+	 * This method retrieves all rides
+	 * 
+	 * @return collection of all rides
+	 */
+	public List<Ride> getAllRides() {
+		System.out.println(">> DataAccess: getAllRides");
+		
+		List<Ride> res = new ArrayList<Ride>();
+		TypedQuery<Ride> query = db.createQuery("SELECT r FROM Ride r", Ride.class);
+		List<Ride> rides = query.getResultList();
+		for (Ride ride : rides) {
+			res.add(ride);
+		}
+		return res;
+	}
+	
+	/**
 	 * This method retrieves the rides from two locations on a given date
 	 * 
 	 * @param from the origin location of a ride
@@ -234,6 +251,57 @@ public class HibernateDataAccess {
 			res.add(d);
 		}
 		return res;
+	}
+
+	/**
+	 * This method removes a ride
+	 * 
+	 * @param from        the origin location of a ride
+	 * @param to          the destination location of a ride
+	 * @param date        the date of the ride
+	 * @param driverEmail the email of the driver
+	 * @return true if the ride was removed, false otherwise
+	 */
+	public boolean removeRide(String from, String to, Date date, String driverEmail) {
+		System.out.println(">> DataAccess: removeRide=> from= " + from + " to= " + to + " driver=" + driverEmail
+				+ " date " + date);
+		
+		try {
+			db.getTransaction().begin();
+
+			// Find driver by email (not by primary key username)
+			TypedQuery<Driver> query = db.createQuery(
+				"SELECT d FROM Driver d WHERE d.email=?1", Driver.class);
+			query.setParameter(1, driverEmail);
+			
+			List<Driver> drivers = query.getResultList();
+			if (drivers.isEmpty()) {
+				System.out.println(">> DataAccess: removeRide=> driver not found with email: " + driverEmail);
+				db.getTransaction().rollback();
+				return false;
+			}
+			
+			Driver driver = drivers.get(0);
+			System.out.println(">> DataAccess: removeRide=> found driver: " + driver.getUsername());
+			
+			Ride removedRide = driver.removeRide(from, to, date);
+			if (removedRide != null) {
+				System.out.println(">> DataAccess: removeRide=> ride removed from driver, committing");
+				db.merge(driver);
+				db.getTransaction().commit();
+				return true;
+			} else {
+				System.out.println(">> DataAccess: removeRide=> ride not found in driver's rides");
+				db.getTransaction().rollback();
+				return false;
+			}
+		} catch (Exception e) {
+			if (db.getTransaction().isActive()) {
+				db.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public void open() {
