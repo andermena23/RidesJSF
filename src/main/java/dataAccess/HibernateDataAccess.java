@@ -411,5 +411,220 @@ public class HibernateDataAccess {
 			return null;
 		}
 	}
+	
+	/**
+	 * This method reserves a ride for a traveler
+	 * 
+	 * @param rideId the ID of the ride to reserve
+	 * @param travelerUsername the username of the traveler
+	 * @param seats the number of seats to reserve
+	 * @return the created reservation, or null if the operation fails
+	 */
+	public domain.RideReservation reserveRide(Integer rideId, String travelerUsername, int seats) {
+		System.out.println(">> DataAccess: reserveRide=> rideId= " + rideId + ", travelerUsername= " + travelerUsername + ", seats= " + seats);
+		
+		try {
+			db.getTransaction().begin();
+			
+			// Find the ride
+			Ride ride = db.find(Ride.class, rideId);
+			if (ride == null) {
+				System.out.println(">> DataAccess: reserveRide=> ride not found");
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Find the traveler
+			Traveler traveler = db.find(Traveler.class, travelerUsername);
+			if (traveler == null) {
+				System.out.println(">> DataAccess: reserveRide=> traveler not found");
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Check if enough seats are available
+			if (ride.getnPlaces() < seats) {
+				System.out.println(">> DataAccess: reserveRide=> not enough seats available");
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Calculate total cost
+			double totalCost = ride.getPrice() * seats;
+			System.out.println(">> DataAccess: reserveRide=> total cost= " + totalCost + ", traveler balance= " + traveler.getWallet());
+			
+			// Check if traveler has sufficient funds
+			if (traveler.getWallet() < totalCost) {
+				System.out.println(">> DataAccess: reserveRide=> insufficient funds");
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Deduct cost from traveler's wallet
+			boolean withdrawn = traveler.withdraw(totalCost);
+			if (!withdrawn) {
+				System.out.println(">> DataAccess: reserveRide=> failed to withdraw funds");
+				db.getTransaction().rollback();
+				return null;
+			}
+			
+			// Create the reservation
+			domain.RideReservation reservation = new domain.RideReservation(ride, traveler, seats);
+			db.persist(reservation);
+			
+			// Update available seats in the ride
+			ride.setBetMinimum((int)ride.getnPlaces() - seats);
+			db.merge(ride);
+			db.merge(traveler);
+			
+			db.getTransaction().commit();
+			System.out.println(">> DataAccess: reserveRide=> reservation created successfully. New balance: " + traveler.getWallet());
+			
+			return reservation;
+		} catch (Exception e) {
+			if (db.getTransaction().isActive()) {
+				db.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * This method deposits money into a traveler's wallet
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @param amount the amount to deposit
+	 * @return true if the operation was successful, false otherwise
+	 */
+	public boolean depositMoney(String travelerUsername, double amount) {
+		System.out.println(">> DataAccess: depositMoney=> travelerUsername= " + travelerUsername + ", amount= " + amount);
+		
+		try {
+			db.getTransaction().begin();
+			
+			// Find the traveler
+			Traveler traveler = db.find(Traveler.class, travelerUsername);
+			if (traveler == null) {
+				System.out.println(">> DataAccess: depositMoney=> traveler not found");
+				db.getTransaction().rollback();
+				return false;
+			}
+			
+			// Deposit money
+			boolean success = traveler.deposit(amount);
+			if (!success) {
+				System.out.println(">> DataAccess: depositMoney=> invalid amount");
+				db.getTransaction().rollback();
+				return false;
+			}
+			
+			db.merge(traveler);
+			db.getTransaction().commit();
+			System.out.println(">> DataAccess: depositMoney=> money deposited successfully. New balance: " + traveler.getWallet());
+			
+			return true;
+		} catch (Exception e) {
+			if (db.getTransaction().isActive()) {
+				db.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/**
+	 * This method withdraws money from a traveler's wallet
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @param amount the amount to withdraw
+	 * @return true if the operation was successful, false otherwise
+	 */
+	public boolean withdrawMoney(String travelerUsername, double amount) {
+		System.out.println(">> DataAccess: withdrawMoney=> travelerUsername= " + travelerUsername + ", amount= " + amount);
+		
+		try {
+			db.getTransaction().begin();
+			
+			// Find the traveler
+			Traveler traveler = db.find(Traveler.class, travelerUsername);
+			if (traveler == null) {
+				System.out.println(">> DataAccess: withdrawMoney=> traveler not found");
+				db.getTransaction().rollback();
+				return false;
+			}
+			
+			// Withdraw money
+			boolean success = traveler.withdraw(amount);
+			if (!success) {
+				System.out.println(">> DataAccess: withdrawMoney=> insufficient funds or invalid amount");
+				db.getTransaction().rollback();
+				return false;
+			}
+			
+			db.merge(traveler);
+			db.getTransaction().commit();
+			System.out.println(">> DataAccess: withdrawMoney=> money withdrawn successfully. New balance: " + traveler.getWallet());
+			
+			return true;
+		} catch (Exception e) {
+			if (db.getTransaction().isActive()) {
+				db.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/**
+	 * This method gets the wallet balance of a traveler
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @return the wallet balance, or -1 if the user is not found or not a traveler
+	 */
+	public double getWalletBalance(String travelerUsername) {
+		System.out.println(">> DataAccess: getWalletBalance=> travelerUsername= " + travelerUsername);
+		
+		try {
+			// Find the traveler
+			Traveler traveler = db.find(Traveler.class, travelerUsername);
+			if (traveler == null) {
+				System.out.println(">> DataAccess: getWalletBalance=> traveler not found");
+				return -1;
+			}
+			
+			double balance = traveler.getWallet();
+			System.out.println(">> DataAccess: getWalletBalance=> balance= " + balance);
+			return balance;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
+	/**
+	 * This method retrieves all reservations made by a traveler
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @return list of reservations made by the traveler
+	 */
+	public java.util.List<domain.RideReservation> getTravelerReservations(String travelerUsername) {
+		System.out.println(">> DataAccess: getTravelerReservations=> travelerUsername= " + travelerUsername);
+		
+		try {
+			TypedQuery<domain.RideReservation> query = db.createQuery(
+				"SELECT r FROM RideReservation r WHERE r.traveler.username = :username ORDER BY r.reservationDate DESC",
+				domain.RideReservation.class);
+			query.setParameter("username", travelerUsername);
+			
+			java.util.List<domain.RideReservation> reservations = query.getResultList();
+			System.out.println(">> DataAccess: getTravelerReservations=> found " + reservations.size() + " reservations");
+			
+			return reservations;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new java.util.ArrayList<>();
+		}
+	}
 
 }

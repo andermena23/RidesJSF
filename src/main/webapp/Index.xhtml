@@ -72,6 +72,20 @@
 				<h:commandButton value="#{msg['Index.QueryRides']}" action="#{index.queryRides}"
 					style="font-size: 1em; padding: 0.5em 1em;" />
 			</p>
+			<h:panelGroup rendered="#{index.isTraveler()}">
+				<p>
+					<h:commandButton value="#{msg['Index.ReserveRides']}" action="#{index.reserveRides}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+				<p>
+					<h:commandButton value="#{msg['Index.ManageWallet']}" action="#{index.manageWallet}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+				<p>
+					<h:commandButton value="#{msg['Index.MyReservations']}" action="#{index.myReservations}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+			</h:panelGroup>
 			<p>
 				<h:selectOneRadio value="#{index.language}">
 					<f:selectItem itemValue="eu" itemLabel="Euskara" />

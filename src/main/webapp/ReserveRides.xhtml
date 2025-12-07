@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>Reserve Rides</title>
+		<style>
+			.available-date a {
+				background-color: #4CAF50 !important;
+				color: white !important;
+				font-weight: bold !important;
+				border-radius: 50% !important;
+				width: 30px !important;
+				height: 30px !important;
+				line-height: 30px !important;
+				text-align: center !important;
+				display: inline-flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				padding: 0 !important;
+			}
+			.available-date a:hover {
+				background-color: #45a049 !important;
+			}
+			.ui-datepicker {
+				font-size: 0.85em;
+				width: fit-content !important;
+				max-width: fit-content !important;
+			}
+			.ui-datepicker table {
+				border-collapse: collapse;
+				width: 100% !important;
+			}
+			.ui-datepicker td {
+				padding: 1px !important;
+				text-align: center;
+			}
+			.ui-datepicker td a, .ui-datepicker td span {
+				padding: 5px !important;
+				font-size: 0.95em !important;
+				width: 30px;
+				height: 30px;
+				line-height: 20px;
+				display: inline-block;
+				text-align: center;
+			}
+			.ui-datepicker th {
+				padding: 6px 2px !important;
+				font-weight: bold;
+				font-size: 0.9em !important;
+				text-align: center;
+			}
+			.ui-datepicker .ui-datepicker-header {
+				padding: 4px !important;
+				font-size: 0.9em !important;
+				position: relative !important;
+			}
+			.ui-datepicker .ui-datepicker-title {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: flex-start !important;
+				gap: 6px;
+				padding-left: 35px !important;
+			}
+			.ui-datepicker .ui-datepicker-month,
+			.ui-datepicker .ui-datepicker-year {
+				font-size: 0.85em !important;
+				padding: 2px 3px !important;
+				margin: 0 !important;
+				width: auto !important;
+				min-width: 60px;
+			}
+			.ui-datepicker-prev {
+				position: absolute !important;
+				left: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-prev span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next {
+				position: absolute !important;
+				right: 4px !important;
+				top: 50% !important;
+				transform: translateY(-50%) !important;
+				width: 25px !important;
+				height: 25px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.ui-datepicker-next span {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.rides-table {
+				border-collapse: collapse;
+				width: 100%;
+				margin-top: 10px;
+			}
+			.rides-table-header {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				font-weight: bold;
+			}
+			.rides-table td {
+				padding: 10px;
+				border: 1px solid #ddd;
+			}
+			.rides-table-row-odd {
+				background-color: #f9f9f9;
+			}
+			.rides-table-row-even {
+				background-color: #ffffff;
+			}
+			.rides-table tr:hover {
+				background-color: #f5f5f5;
+			}
+			.no-seats-available {
+				background-color: #bdbdbd !important;
+				color: #616161;
+				opacity: 0.6;
+				text-decoration: line-through;
+			}
+			.no-seats-available:hover {
+				background-color: #bdbdbd !important;
+			}
+			.reserve-input {
+				width: 60px;
+				padding: 4px;
+				text-align: center;
+			}
+			.reserve-button {
+				background-color: #2196F3;
+				color: white;
+				border: none;
+				padding: 8px 16px;
+				cursor: pointer;
+				border-radius: 4px;
+				font-size: 0.9em;
+			}
+			.reserve-button:hover {
+				background-color: #0b7dda;
+			}
+			.message-success {
+				background-color: #d4edda;
+				color: #155724;
+				padding: 12px;
+				border: 1px solid #c3e6cb;
+				border-radius: 4px;
+				margin: 10px 0;
+			}
+			.message-error {
+				background-color: #f8d7da;
+				color: #721c24;
+				padding: 12px;
+				border: 1px solid #f5c6cb;
+				border-radius: 4px;
+				margin: 10px 0;
+			}
+		</style>
+		<script type="text/javascript">
+		//<![CDATA[
+			var availableDates = [];
+			
+			function updateAvailableDates(datesJson) {
+				availableDates = JSON.parse(datesJson);
+				console.log('Available dates updated:', availableDates);
+			}
+			
+			function isDateAvailable(date) {
+				var dateStr = formatDate(date);
+				var isAvailable = availableDates.indexOf(dateStr) !== -1;
+				// Return array: [enabled, cssClass, tooltip]
+				return [isAvailable, isAvailable ? 'available-date' : '', ''];
+			}
+			
+			function formatDate(date) {
+				var d = new Date(date);
+				var month = '' + (d.getMonth() + 1);
+				var day = '' + d.getDate();
+				var year = d.getFullYear();
+				
+				if (month.length < 2) month = '0' + month;
+				if (day.length < 2) day = '0' + day;
+				
+				return [year, month, day].join('-');
+			}
+		//]]>
+		</script>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		<h:form id="reserveForm">
+			<h3>#{msg['ReserveRides.Title']}</h3>
+			
+			<!-- Display login status -->
+			<h:panelGroup rendered="#{login.loggedIn}">
+				<p style="color: #4CAF50; font-weight: bold;">#{msg['ReserveRides.LoggedInAs']}: #{login.currentUser.username}</p>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{not login.loggedIn}">
+				<p style="color: #d32f2f; font-weight: bold;">#{msg['ReserveRides.NotLoggedIn']}</p>
+			</h:panelGroup>
+			
+			<!-- Display reservation message -->
+			<h:panelGroup id="messagePanel">
+				<h:panelGroup rendered="#{not empty reserveRides.reservationMessage and reserveRides.reservationMessageType == 'success'}">
+					<div class="message-success">
+						#{reserveRides.reservationMessage}
+					</div>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not empty reserveRides.reservationMessage and reserveRides.reservationMessageType == 'error'}">
+					<div class="message-error">
+						#{reserveRides.reservationMessage}
+					</div>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:inputHidden id="datesJson" value="#{reserveRides.availableDatesJson}" />
+			
+			<h:panelGrid columns="2" style="margin-bottom: 20px;">
+				<h:outputLabel value="#{msg['ReserveRides.From']}: " for="fromCity" />
+				<h:selectOneMenu id="fromCity" value="#{reserveRides.selectedFrom}">
+					<f:selectItem itemLabel="#{msg['ReserveRides.SelectCity']}" itemValue="" />
+					<f:selectItems value="#{reserveRides.departingCities}" />
+					<p:ajax event="change" update="toCity calendarPanel hiddenDates" process="@this" oncomplete="refreshCalendarDates()" />
+				</h:selectOneMenu>
+				
+				<h:outputLabel value="#{msg['ReserveRides.To']}: " for="toCity" />
+				<h:selectOneMenu id="toCity" value="#{reserveRides.selectedTo}" disabled="#{empty reserveRides.destinationCities}">
+					<f:selectItem itemLabel="#{msg['ReserveRides.SelectDestination']}" itemValue="" />
+					<f:selectItems value="#{reserveRides.destinationCities}" />
+					<p:ajax event="change" update="calendarPanel hiddenDates" process="@this" listener="#{reserveRides.loadAvailableDates}" oncomplete="refreshCalendarDates()" />
+				</h:selectOneMenu>
+			</h:panelGrid>
+			
+			<h:panelGroup id="calendarPanel">
+				<h:panelGroup rendered="#{not empty reserveRides.selectedFrom and not empty reserveRides.selectedTo}">
+					<h:outputLabel value="#{msg['ReserveRides.Date']}: " style="display: block; margin-bottom: 10px;" />
+					<p:calendar id="dateCalendar" 
+								value="#{reserveRides.selectedDate}" 
+								navigator="true" 
+								mode="inline"
+								pattern="dd/MM/yyyy"
+								beforeShowDay="isDateAvailable"
+								widgetVar="calendarWidget"
+								oncomplete="refreshCalendarDates()">
+						<p:ajax event="dateSelect" listener="#{reserveRides.onDateSelect}" update=":reserveForm:ridesTableWrapper" />
+						<p:ajax event="viewChange" listener="#{reserveRides.onViewChange}" oncomplete="refreshCalendarDates()" />
+					</p:calendar>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:panelGroup id="ridesTableWrapper">
+				<h:panelGroup id="ridesTable" rendered="#{not empty reserveRides.rides}">
+					<h3 style="margin-top: 30px;">#{msg['ReserveRides.AvailableRides']}</h3>
+					<h:dataTable value="#{reserveRides.rides}" var="ride" 
+								 styleClass="rides-table" 
+								 headerClass="rides-table-header" 
+								 rowClasses="rides-table-row-odd,rides-table-row-even"
+								 style="border-collapse: collapse; width: 100%; margin-top: 10px; border: 1px solid #ddd;">
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.Driver']}</f:facet>
+							#{ride.driver.name}
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.FromColumn']}</f:facet>
+							#{ride.from}
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.ToColumn']}</f:facet>
+							#{ride.to}
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.DateColumn']}</f:facet>
+							<h:outputText value="#{ride.date}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.Places']}</f:facet>
+							<h:outputText value="#{ride.nPlaces}">
+								<f:convertNumber integerOnly="true" />
+							</h:outputText>
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.Price']}</f:facet>
+							<h:outputText value="#{ride.price}">
+								<f:convertNumber type="currency" currencySymbol="€" />
+							</h:outputText>
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.Seats']}</f:facet>
+							<h:inputText value="#{reserveRides.seatsPerRide[ride.rideNumber]}" styleClass="reserve-input" 
+										 rendered="#{login.loggedIn}">
+								<f:convertNumber integerOnly="true" />
+							</h:inputText>
+							<h:outputText value="-" rendered="#{not login.loggedIn}" />
+						</h:column>
+						<h:column styleClass="#{ride.nPlaces == 0 ? 'no-seats-available' : ''}">
+							<f:facet name="header">#{msg['ReserveRides.Action']}</f:facet>
+							<p:commandButton value="#{msg['ReserveRides.ReserveButton']}" 
+											 styleClass="reserve-button"
+											 rendered="#{login.loggedIn}"
+											 action="#{reserveRides.reserveRide(ride.rideNumber, reserveRides.seatsPerRide[ride.rideNumber] == null ? 1 : reserveRides.seatsPerRide[ride.rideNumber])}"
+											 update=":reserveForm:ridesTableWrapper :reserveForm:messagePanel"
+											 process="@form" />
+							<h:outputText value="#{msg['ReserveRides.LoginRequired']}" 
+										  rendered="#{not login.loggedIn}"
+										  style="font-size: 0.85em; color: #666;" />
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{empty reserveRides.rides and not empty reserveRides.selectedFrom and not empty reserveRides.selectedTo and reserveRides.selectedDate ne null}">
+					<p style="margin-top: 20px; font-style: italic; color: #666;">#{msg['ReserveRides.NoRidesFound']}</p>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:inputHidden id="hiddenDates" value="#{reserveRides.availableDatesJson}" />
+			
+			<script type="text/javascript">
+			//<![CDATA[
+				function refreshCalendarDates() {
+					var datesJson = document.getElementById('reserveForm:hiddenDates').value;
+					if (datesJson) {
+						availableDates = JSON.parse(datesJson);
+						console.log('Dates refreshed:', availableDates);
+						if (typeof PF !== 'undefined' && PF('calendarWidget')) {
+							setTimeout(function() {
+								PF('calendarWidget').refresh();
+							}, 50);
+						}
+					}
+				}
+			//]]>
+			</script>
+			
+			<p style="margin-top: 20px;">
+				<h:commandButton value="#{msg['ReserveRides.BackToIndex']}" action="Index"
+					style="font-size: 1em; padding: 0.5em 1em;" />
+			</p>
+			
+			<p>
+				<h:selectOneRadio value="#{index.language}">
+					<f:selectItem itemValue="eu" itemLabel="Euskara" />
+					<f:selectItem itemValue="es" itemLabel="Castellano" />
+					<f:selectItem itemValue="en" itemLabel="English" />
+					<f:ajax render="@form" />
+				</h:selectOneRadio>
+			</p>
+		</h:form>
+	</h:body>
+</f:view>
+</html>

@@ -139,5 +139,54 @@ public interface BLFacade {
 	 */
 	// @WebMethod
 	public void initializeBD();
+	
+	/**
+	 * This method reserves a ride for a traveler
+	 * 
+	 * @param rideId the ID of the ride to reserve
+	 * @param travelerUsername the username of the traveler
+	 * @param seats the number of seats to reserve
+	 * @return the created reservation, or null if the operation fails
+	 */
+	// @WebMethod
+	public domain.RideReservation reserveRide(Integer rideId, String travelerUsername, int seats);
+	
+	/**
+	 * This method deposits money into a traveler's wallet
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @param amount the amount to deposit
+	 * @return true if the operation was successful, false otherwise
+	 */
+	// @WebMethod
+	public boolean depositMoney(String travelerUsername, double amount);
+	
+	/**
+	 * This method withdraws money from a traveler's wallet
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @param amount the amount to withdraw
+	 * @return true if the operation was successful, false otherwise
+	 */
+	// @WebMethod
+	public boolean withdrawMoney(String travelerUsername, double amount);
+	
+	/**
+	 * This method gets the wallet balance of a traveler
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @return the wallet balance, or -1 if the user is not found or not a traveler
+	 */
+	// @WebMethod
+	public double getWalletBalance(String travelerUsername);
+	
+	/**
+	 * This method retrieves all reservations made by a traveler
+	 * 
+	 * @param travelerUsername the username of the traveler
+	 * @return list of reservations made by the traveler
+	 */
+	// @WebMethod
+	public java.util.List<domain.RideReservation> getTravelerReservations(String travelerUsername);
 
 }

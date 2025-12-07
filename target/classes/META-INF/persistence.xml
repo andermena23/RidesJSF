@@ -14,6 +14,7 @@
         <class>domain.Admin</class>
         <class>domain.Traveler</class>
         <class>domain.Ride</class>
+        <class>domain.RideReservation</class>
         
         <properties>
             <!-- Database connection settings - MariaDB -->

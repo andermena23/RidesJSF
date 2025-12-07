@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>#{msg['MyReservations.Title']}</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+				background-color: #f5f5f5;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 2em;
+				padding-bottom: 1em;
+				border-bottom: 2px solid #4CAF50;
+			}
+			.container {
+				max-width: 1200px;
+				margin: 0 auto;
+				background-color: white;
+				padding: 2em;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			}
+			.user-info {
+				text-align: right;
+				color: #666;
+			}
+			.reservations-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 1em;
+			}
+			.reservations-table th {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				font-weight: bold;
+			}
+			.reservations-table td {
+				padding: 12px;
+				border-bottom: 1px solid #ddd;
+			}
+			.reservations-table tr:hover {
+				background-color: #f5f5f5;
+			}
+			.no-reservations {
+				text-align: center;
+				padding: 3em;
+				color: #666;
+				font-size: 1.1em;
+			}
+			.no-reservations-icon {
+				font-size: 3em;
+				margin-bottom: 0.5em;
+			}
+			.btn-back {
+				background-color: #2196F3;
+				color: white;
+				border: none;
+				padding: 0.75em 1.5em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 1em;
+				margin-top: 2em;
+			}
+			.btn-back:hover {
+				background-color: #0b7dda;
+			}
+			.total-cost {
+				font-weight: bold;
+				color: #4CAF50;
+			}
+			.reservation-date {
+				font-size: 0.9em;
+				color: #666;
+			}
+			@media (max-width: 768px) {
+				.reservations-table {
+					font-size: 0.9em;
+				}
+				.reservations-table th,
+				.reservations-table td {
+					padding: 8px;
+				}
+			}
+		</style>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		
+		<!-- Redirect to login if not logged in -->
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{myReservations.checkAuthentication}" />
+		</f:metadata>
+		
+		<div class="container">
+			<div class="header">
+				<h2>#{msg['MyReservations.Title']}</h2>
+				<div class="user-info">
+					<p>#{msg['MyReservations.LoggedInAs']}: <strong>#{login.currentUser.username}</strong></p>
+				</div>
+			</div>
+			
+			<h:form id="reservationsForm">
+				<h:panelGroup rendered="#{empty myReservations.reservations}">
+					<div class="no-reservations">
+						<div class="no-reservations-icon">📋</div>
+						<p>#{msg['MyReservations.NoReservations']}</p>
+					</div>
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not empty myReservations.reservations}">
+					<h:dataTable value="#{myReservations.reservations}" 
+					             var="reservation" 
+					             styleClass="reservations-table">
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.ReservationId']}</f:facet>
+							#{reservation.reservationId}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.From']}</f:facet>
+							#{reservation.ride.from}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.To']}</f:facet>
+							#{reservation.ride.to}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.RideDate']}</f:facet>
+							<h:outputText value="#{reservation.ride.date}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.Driver']}</f:facet>
+							#{reservation.ride.driver.name}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.Seats']}</f:facet>
+							#{reservation.seatsReserved}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.PricePerSeat']}</f:facet>
+							<h:outputText value="#{reservation.ride.price}">
+								<f:convertNumber type="currency" currencySymbol="€" />
+							</h:outputText>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.TotalCost']}</f:facet>
+							<span class="total-cost">
+								<h:outputText value="#{myReservations.getTotalCost(reservation)}">
+									<f:convertNumber type="currency" currencySymbol="€" />
+								</h:outputText>
+							</span>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['MyReservations.ReservationDate']}</f:facet>
+							<span class="reservation-date">
+								<h:outputText value="#{reservation.reservationDate}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</span>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				
+				<!-- Back Button -->
+				<h:commandButton value="#{msg['MyReservations.BackToIndex']}" 
+				                 action="#{myReservations.goToIndex}" 
+				                 styleClass="btn-back" />
+			</h:form>
+		</div>
+	</h:body>
+</f:view>
+</html>

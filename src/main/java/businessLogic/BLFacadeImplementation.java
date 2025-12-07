@@ -185,5 +185,80 @@ public class BLFacadeImplementation implements BLFacade {
 		}
 		return user;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public domain.RideReservation reserveRide(Integer rideId, String travelerUsername, int seats) {
+		domain.RideReservation reservation = null;
+		try {
+			dbManager.open();
+			reservation = dbManager.reserveRide(rideId, travelerUsername, seats);
+		} finally {
+			dbManager.close();
+		}
+		return reservation;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public boolean depositMoney(String travelerUsername, double amount) {
+		boolean result = false;
+		try {
+			dbManager.open();
+			result = dbManager.depositMoney(travelerUsername, amount);
+		} finally {
+			dbManager.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public boolean withdrawMoney(String travelerUsername, double amount) {
+		boolean result = false;
+		try {
+			dbManager.open();
+			result = dbManager.withdrawMoney(travelerUsername, amount);
+		} finally {
+			dbManager.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public double getWalletBalance(String travelerUsername) {
+		double balance = -1;
+		try {
+			dbManager.open();
+			balance = dbManager.getWalletBalance(travelerUsername);
+		} finally {
+			dbManager.close();
+		}
+		return balance;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public java.util.List<domain.RideReservation> getTravelerReservations(String travelerUsername) {
+		java.util.List<domain.RideReservation> reservations = null;
+		try {
+			dbManager.open();
+			reservations = dbManager.getTravelerReservations(travelerUsername);
+		} finally {
+			dbManager.close();
+		}
+		return reservations;
+	}
 
 }
