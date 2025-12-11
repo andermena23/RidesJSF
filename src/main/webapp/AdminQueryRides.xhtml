@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>#{msg['AdminQueryRides.Title']}</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+				background-color: #f5f5f5;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 2em;
+				padding-bottom: 1em;
+				border-bottom: 2px solid #4CAF50;
+			}
+			.container {
+				max-width: 1400px;
+				margin: 0 auto;
+				background-color: white;
+				padding: 2em;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			}
+			.user-info {
+				text-align: right;
+				color: #666;
+			}
+			.rides-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 1em;
+			}
+			.rides-table th {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				font-weight: bold;
+			}
+			.rides-table td {
+				padding: 12px;
+				border-bottom: 1px solid #ddd;
+			}
+			.rides-table tr:hover {
+				background-color: #f5f5f5;
+			}
+			.no-rides {
+				text-align: center;
+				padding: 3em;
+				color: #666;
+				font-size: 1.1em;
+			}
+			.no-rides-icon {
+				font-size: 3em;
+				margin-bottom: 0.5em;
+			}
+			.btn-back {
+				background-color: #2196F3;
+				color: white;
+				border: none;
+				padding: 0.75em 1.5em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 1em;
+				margin-top: 2em;
+			}
+			.btn-back:hover {
+				background-color: #0b7dda;
+			}
+			.btn-toggle {
+				background-color: #ff9800;
+				color: white;
+				border: none;
+				padding: 0.5em 1em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.9em;
+			}
+			.btn-toggle:hover {
+				background-color: #fb8c00;
+			}
+			.reservations-section {
+				background-color: #f9f9f9;
+				padding: 1em;
+				margin-top: 0.5em;
+				border-radius: 4px;
+				border-left: 4px solid #4CAF50;
+			}
+			.reservations-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 0.5em;
+			}
+			.reservations-table th {
+				background-color: #e8f5e9;
+				color: #2e7d32;
+				padding: 8px;
+				text-align: left;
+				font-weight: bold;
+				font-size: 0.9em;
+			}
+			.reservations-table td {
+				padding: 8px;
+				border-bottom: 1px solid #ddd;
+				font-size: 0.9em;
+			}
+			.no-reservations {
+				padding: 1em;
+				color: #666;
+				font-style: italic;
+			}
+			.stats {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 1em;
+				margin-bottom: 1em;
+			}
+			.stat-card {
+				background-color: white;
+				padding: 0.8em;
+				border-radius: 4px;
+				border: 1px solid #ddd;
+			}
+			.stat-label {
+				font-size: 0.85em;
+				color: #666;
+			}
+			.stat-value {
+				font-size: 1.2em;
+				font-weight: bold;
+				color: #4CAF50;
+			}
+			.ride-count {
+				margin-bottom: 1em;
+				color: #666;
+				font-size: 0.95em;
+			}
+			@media (max-width: 768px) {
+				.rides-table {
+					font-size: 0.9em;
+				}
+				.rides-table th,
+				.rides-table td {
+					padding: 8px;
+				}
+				.stats {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		
+		<!-- Redirect to login if not logged in -->
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{adminQueryRides.checkAuthentication}" />
+		</f:metadata>
+		
+		<div class="container">
+			<div class="header">
+				<h2>#{msg['AdminQueryRides.Title']}</h2>
+				<div class="user-info">
+					<p>#{msg['AdminQueryRides.LoggedInAs']}: <strong>#{login.currentUser.username}</strong></p>
+				</div>
+			</div>
+			
+			<h:form id="ridesForm">
+				<!-- Ride Count -->
+				<div class="ride-count">
+					<strong>#{msg['AdminQueryRides.TotalRides']}: #{adminQueryRides.rides.size()}</strong>
+				</div>
+				
+				<!-- No Rides Message -->
+				<h:panelGroup rendered="#{empty adminQueryRides.rides}">
+					<div class="no-rides">
+						<div class="no-rides-icon">🚗</div>
+						<p>#{msg['AdminQueryRides.NoRides']}</p>
+					</div>
+				</h:panelGroup>
+				
+				<!-- Rides Table -->
+				<h:panelGroup rendered="#{not empty adminQueryRides.rides}">
+					<h:dataTable value="#{adminQueryRides.rides}" 
+					             var="ride" 
+					             styleClass="rides-table">
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.RideId']}</f:facet>
+							<strong>#{ride.rideNumber}</strong>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.From']}</f:facet>
+							#{ride.from}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.To']}</f:facet>
+							#{ride.to}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.Date']}</f:facet>
+							<h:outputText value="#{ride.date}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.Driver']}</f:facet>
+							#{ride.driver.name}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.AvailableSeats']}</f:facet>
+							#{ride.nPlaces}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.Price']}</f:facet>
+							<h:outputText value="#{ride.price}">
+								<f:convertNumber type="currency" currencySymbol="€" />
+							</h:outputText>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['AdminQueryRides.Reservations']}</f:facet>
+							<h:commandButton value="#{adminQueryRides.isExpanded(ride.rideNumber) ? msg['AdminQueryRides.Hide'] : msg['AdminQueryRides.ShowReservations']}" 
+							                 action="#{adminQueryRides.toggleReservations(ride.rideNumber)}" 
+							                 styleClass="btn-toggle">
+								<f:ajax render="ridesForm" />
+							</h:commandButton>
+						</h:column>
+						
+						<h:column>
+							<!-- Reservations Detail Section -->
+							<h:panelGroup rendered="#{adminQueryRides.isExpanded(ride.rideNumber)}">
+								<div class="reservations-section">
+									<h:panelGroup rendered="#{empty adminQueryRides.getReservationsForRide(ride.rideNumber)}">
+										<div class="no-reservations">
+											#{msg['AdminQueryRides.NoReservations']}
+										</div>
+									</h:panelGroup>
+									
+									<h:panelGroup rendered="#{not empty adminQueryRides.getReservationsForRide(ride.rideNumber)}">
+										<!-- Stats -->
+										<div class="stats">
+											<div class="stat-card">
+												<div class="stat-label">#{msg['AdminQueryRides.TotalReservations']}</div>
+												<div class="stat-value">#{adminQueryRides.getReservationCount(ride.rideNumber)}</div>
+											</div>
+											<div class="stat-card">
+												<div class="stat-label">#{msg['AdminQueryRides.TotalSeatsReserved']}</div>
+												<div class="stat-value">#{adminQueryRides.getTotalSeatsReserved(ride.rideNumber)}</div>
+											</div>
+											<div class="stat-card">
+												<div class="stat-label">#{msg['AdminQueryRides.TotalRevenue']}</div>
+												<div class="stat-value">
+													<h:outputText value="#{adminQueryRides.getTotalRevenue(ride.rideNumber)}">
+														<f:convertNumber type="currency" currencySymbol="€" />
+													</h:outputText>
+												</div>
+											</div>
+										</div>
+										
+										<!-- Reservations Table -->
+										<h:dataTable value="#{adminQueryRides.getReservationsForRide(ride.rideNumber)}" 
+										             var="reservation" 
+										             styleClass="reservations-table">
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.ReservationId']}</f:facet>
+												#{reservation.reservationId}
+											</h:column>
+											
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.Traveler']}</f:facet>
+												#{reservation.traveler.username}
+											</h:column>
+											
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.Email']}</f:facet>
+												#{reservation.traveler.email}
+											</h:column>
+											
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.Seats']}</f:facet>
+												#{reservation.seatsReserved}
+											</h:column>
+											
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.Cost']}</f:facet>
+												<h:outputText value="#{ride.price * reservation.seatsReserved}">
+													<f:convertNumber type="currency" currencySymbol="€" />
+												</h:outputText>
+											</h:column>
+											
+											<h:column>
+												<f:facet name="header">#{msg['AdminQueryRides.ReservedOn']}</f:facet>
+												<h:outputText value="#{reservation.reservationDate}">
+													<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+												</h:outputText>
+											</h:column>
+										</h:dataTable>
+									</h:panelGroup>
+								</div>
+							</h:panelGroup>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				
+				<!-- Back Button -->
+				<h:commandButton value="#{msg['AdminQueryRides.BackToIndex']}" 
+				                 action="#{adminQueryRides.goToIndex}" 
+				                 styleClass="btn-back" />
+			</h:form>
+		</div>
+	</h:body>
+</f:view>
+</html>

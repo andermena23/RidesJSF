@@ -94,6 +94,21 @@ public class BLFacadeImplementation implements BLFacade {
 	 * {@inheritDoc}
 	 */
 	// @WebMethod
+	public List<Ride> getRidesByDriver(String driverEmail) {
+		List<Ride> rides = null;
+		try {
+			dbManager.open();
+			rides = dbManager.getRidesByDriver(driverEmail);
+		} finally {
+			dbManager.close();
+		}
+		return rides;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
 	public List<Ride> getRides(String from, String to, Date date) {
 		List<Ride> rides = null;
 		try {
@@ -255,6 +270,36 @@ public class BLFacadeImplementation implements BLFacade {
 		try {
 			dbManager.open();
 			reservations = dbManager.getTravelerReservations(travelerUsername);
+		} finally {
+			dbManager.close();
+		}
+		return reservations;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public java.util.List<User> getAllUsers() {
+		java.util.List<User> users = null;
+		try {
+			dbManager.open();
+			users = dbManager.getAllUsers();
+		} finally {
+			dbManager.close();
+		}
+		return users;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	// @WebMethod
+	public java.util.List<domain.RideReservation> getRideReservations(Integer rideId) {
+		java.util.List<domain.RideReservation> reservations = null;
+		try {
+			dbManager.open();
+			reservations = dbManager.getRideReservations(rideId);
 		} finally {
 			dbManager.close();
 		}

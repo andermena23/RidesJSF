@@ -62,6 +62,21 @@ public class IndexBean implements Serializable {
 		return "MyReservations?faces-redirect=true";
 	}
 	
+	public String queryUsers() {
+		System.out.println("queryUsers");
+		return "QueryUsers?faces-redirect=true";
+	}
+	
+	public String adminQueryRides() {
+		System.out.println("adminQueryRides");
+		return "AdminQueryRides?faces-redirect=true";
+	}
+	
+	public String myRides() {
+		System.out.println("myRides");
+		return "MyRides?faces-redirect=true";
+	}
+	
 	public boolean canCreateRide() {
 		if (!login.isLoggedIn()) {
 			return false;

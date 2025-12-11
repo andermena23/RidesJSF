@@ -188,5 +188,31 @@ public interface BLFacade {
 	 */
 	// @WebMethod
 	public java.util.List<domain.RideReservation> getTravelerReservations(String travelerUsername);
+	
+	/**
+	 * This method retrieves all users in the system
+	 * 
+	 * @return list of all users
+	 */
+	// @WebMethod
+	public java.util.List<User> getAllUsers();
+	
+	/**
+	 * This method retrieves all reservations for a specific ride
+	 * 
+	 * @param rideId the ID of the ride
+	 * @return list of reservations for the ride
+	 */
+	// @WebMethod
+	public java.util.List<domain.RideReservation> getRideReservations(Integer rideId);
+	
+	/**
+	 * This method retrieves all rides created by a specific driver
+	 * 
+	 * @param driverEmail the email of the driver
+	 * @return list of rides created by the driver
+	 */
+	// @WebMethod
+	public java.util.List<Ride> getRidesByDriver(String driverEmail);
 
 }

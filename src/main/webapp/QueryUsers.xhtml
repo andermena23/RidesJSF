@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>#{msg['QueryUsers.Title']}</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+				background-color: #f5f5f5;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 2em;
+				padding-bottom: 1em;
+				border-bottom: 2px solid #4CAF50;
+			}
+			.container {
+				max-width: 1200px;
+				margin: 0 auto;
+				background-color: white;
+				padding: 2em;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			}
+			.user-info {
+				text-align: right;
+				color: #666;
+			}
+			.users-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 1em;
+			}
+			.users-table th {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				font-weight: bold;
+			}
+			.users-table td {
+				padding: 12px;
+				border-bottom: 1px solid #ddd;
+			}
+			.users-table tr:hover {
+				background-color: #f5f5f5;
+			}
+			.no-users {
+				text-align: center;
+				padding: 3em;
+				color: #666;
+				font-size: 1.1em;
+			}
+			.no-users-icon {
+				font-size: 3em;
+				margin-bottom: 0.5em;
+			}
+			.btn-back {
+				background-color: #2196F3;
+				color: white;
+				border: none;
+				padding: 0.75em 1.5em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 1em;
+				margin-top: 2em;
+			}
+			.btn-back:hover {
+				background-color: #0b7dda;
+			}
+			.role-badge {
+				display: inline-block;
+				padding: 0.3em 0.8em;
+				border-radius: 12px;
+				font-size: 0.9em;
+				font-weight: bold;
+			}
+			.role-admin {
+				background-color: #f44336;
+				color: white;
+			}
+			.role-driver {
+				background-color: #2196F3;
+				color: white;
+			}
+			.role-traveler {
+				background-color: #4CAF50;
+				color: white;
+			}
+			.user-count {
+				margin-bottom: 1em;
+				color: #666;
+				font-size: 0.95em;
+			}
+			@media (max-width: 768px) {
+				.users-table {
+					font-size: 0.9em;
+				}
+				.users-table th,
+				.users-table td {
+					padding: 8px;
+				}
+			}
+		</style>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		
+		<!-- Redirect to login if not logged in -->
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{queryUsers.checkAuthentication}" />
+		</f:metadata>
+		
+		<div class="container">
+			<div class="header">
+				<h2>#{msg['QueryUsers.Title']}</h2>
+				<div class="user-info">
+					<p>#{msg['QueryUsers.LoggedInAs']}: <strong>#{login.currentUser.username}</strong></p>
+				</div>
+			</div>
+			
+			<h:form id="usersForm">
+				<!-- User Count -->
+				<div class="user-count">
+					<strong>#{msg['QueryUsers.TotalUsers']}: #{queryUsers.users.size()}</strong>
+				</div>
+				
+				<!-- No Users Message -->
+				<h:panelGroup rendered="#{empty queryUsers.users}">
+					<div class="no-users">
+						<div class="no-users-icon">👥</div>
+						<p>#{msg['QueryUsers.NoUsers']}</p>
+					</div>
+				</h:panelGroup>
+				
+				<!-- Users Table -->
+				<h:panelGroup rendered="#{not empty queryUsers.users}">
+					<h:dataTable value="#{queryUsers.users}" 
+					             var="user" 
+					             styleClass="users-table">
+						<h:column>
+							<f:facet name="header">#{msg['QueryUsers.Username']}</f:facet>
+							<strong>#{user.username}</strong>
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['QueryUsers.Email']}</f:facet>
+							#{user.email}
+						</h:column>
+						
+						<h:column>
+							<f:facet name="header">#{msg['QueryUsers.Role']}</f:facet>
+							<span class="role-badge role-#{user.role.roleName}">
+								#{queryUsers.getRoleDisplayName(user)}
+							</span>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+				
+				<!-- Back Button -->
+				<h:commandButton value="#{msg['QueryUsers.BackToIndex']}" 
+				                 action="#{queryUsers.goToIndex}" 
+				                 styleClass="btn-back" />
+			</h:form>
+		</div>
+	</h:body>
+</f:view>
+</html>

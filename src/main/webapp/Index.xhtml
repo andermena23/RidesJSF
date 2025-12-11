@@ -50,7 +50,12 @@
 				<h2>#{msg['Index.Title']}</h2>
 				<div class="user-info">
 					<p>#{msg['Login.Welcome']}, <strong>#{login.currentUser.username}</strong></p>
-					<p style="font-size: 0.9em; color: #666;">#{msg['Index.Role']}: #{login.currentUser.role.roleName}</p>
+					<p style="font-size: 0.9em; color: #666;">
+						#{msg['Index.Role']}: #{login.currentUser.role.roleName}
+						<h:panelGroup rendered="#{index.isTraveler()}">
+							 | #{msg['Index.Balance']}: <strong>#{login.walletBalance} €</strong>
+						</h:panelGroup>
+					</p>
 					<h:commandButton value="#{msg['Login.Logout']}" 
 					                 action="#{login.logout}" 
 					                 styleClass="btn-logout" />
@@ -65,6 +70,22 @@
 				</p>
 				<p>
 					<h:commandButton value="#{msg['Index.RemoveRide']}" action="RemoveRide"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{index.isDriver()}">
+				<p>
+					<h:commandButton value="#{msg['Index.MyRides']}" action="#{index.myRides}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{index.isAdmin()}">
+				<p>
+					<h:commandButton value="#{msg['Index.QueryUsers']}" action="#{index.queryUsers}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+				</p>
+				<p>
+					<h:commandButton value="#{msg['Index.AdminQueryRides']}" action="#{index.adminQueryRides}"
 						style="font-size: 1em; padding: 0.5em 1em;" />
 				</p>
 			</h:panelGroup>

@@ -97,4 +97,24 @@ public class LoginBean implements Serializable {
 	public void setCurrentUser(User currentUser) {
 		this.currentUser = currentUser;
 	}
+	
+	public double getWalletBalance() {
+		if (currentUser != null && currentUser instanceof domain.Traveler) {
+			// Fetch current balance from database instead of cached object
+			String username = currentUser.getUsername();
+			double balance = businessLogic.getWalletBalance(username);
+			// Update cached user object too
+			if (balance >= 0) {
+				((domain.Traveler) currentUser).setWallet(balance);
+				return balance;
+			}
+			// Fallback to cached value if DB fetch fails
+			return ((domain.Traveler) currentUser).getWallet();
+		}
+		return 0.0;
+	}
+	
+	public boolean isTraveler() {
+		return currentUser != null && currentUser instanceof domain.Traveler;
+	}
 }

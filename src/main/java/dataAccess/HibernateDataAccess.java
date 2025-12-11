@@ -149,11 +149,20 @@ public class HibernateDataAccess {
 		try {
 			db.getTransaction().begin();
 
-			Driver driver = db.find(Driver.class, driverEmail);
-			if (driver == null) {
+			// Find driver by email (not by primary key username)
+			TypedQuery<Driver> query = db.createQuery(
+				"SELECT d FROM Driver d WHERE d.email=?1", Driver.class);
+			query.setParameter(1, driverEmail);
+			
+			List<Driver> drivers = query.getResultList();
+			if (drivers.isEmpty()) {
+				System.out.println(">> DataAccess: createRide=> driver not found with email: " + driverEmail);
 				db.getTransaction().rollback();
 				return null;
 			}
+			
+			Driver driver = drivers.get(0);
+			System.out.println(">> DataAccess: createRide=> found driver: " + driver.getUsername());
 			
 			if (driver.doesRideExists(from, to, date)) {
 				db.getTransaction().rollback();
@@ -194,6 +203,45 @@ public class HibernateDataAccess {
 		List<Ride> rides = query.getResultList();
 		for (Ride ride : rides) {
 			res.add(ride);
+		}
+		return res;
+	}
+	
+	/**
+	 * This method retrieves all rides created by a specific driver
+	 * 
+	 * @param driverEmail the email of the driver
+	 * @return collection of rides created by the driver
+	 */
+	public List<Ride> getRidesByDriver(String driverEmail) {
+		System.out.println(">> DataAccess: getRidesByDriver=> driver email= " + driverEmail);
+		
+		List<Ride> res = new ArrayList<Ride>();
+		try {
+			// Find driver by email
+			TypedQuery<Driver> driverQuery = db.createQuery(
+				"SELECT d FROM Driver d WHERE d.email=?1", Driver.class);
+			driverQuery.setParameter(1, driverEmail);
+			
+			List<Driver> drivers = driverQuery.getResultList();
+			if (drivers.isEmpty()) {
+				System.out.println(">> DataAccess: getRidesByDriver=> driver not found with email: " + driverEmail);
+				return res;
+			}
+			
+			Driver driver = drivers.get(0);
+			System.out.println(">> DataAccess: getRidesByDriver=> found driver: " + driver.getUsername());
+			
+			// Query rides for this driver
+			TypedQuery<Ride> rideQuery = db.createQuery(
+				"SELECT r FROM Ride r WHERE r.driver.username=?1 ORDER BY r.date DESC", Ride.class);
+			rideQuery.setParameter(1, driver.getUsername());
+			res = rideQuery.getResultList();
+			
+			System.out.println(">> DataAccess: getRidesByDriver=> found " + res.size() + " rides");
+		} catch (Exception e) {
+			System.err.println(">> DataAccess: getRidesByDriver=> error: " + e.getMessage());
+			e.printStackTrace();
 		}
 		return res;
 	}
@@ -619,6 +667,55 @@ public class HibernateDataAccess {
 			
 			java.util.List<domain.RideReservation> reservations = query.getResultList();
 			System.out.println(">> DataAccess: getTravelerReservations=> found " + reservations.size() + " reservations");
+			
+			return reservations;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new java.util.ArrayList<>();
+		}
+	}
+	
+	/**
+	 * This method retrieves all users in the system
+	 * 
+	 * @return list of all users
+	 */
+	public java.util.List<User> getAllUsers() {
+		System.out.println(">> DataAccess: getAllUsers");
+		
+		try {
+			TypedQuery<AbstractUser> query = db.createQuery(
+				"SELECT u FROM AbstractUser u ORDER BY u.username",
+				AbstractUser.class);
+			
+			java.util.List<AbstractUser> abstractUsers = query.getResultList();
+			java.util.List<User> users = new java.util.ArrayList<>(abstractUsers);
+			System.out.println(">> DataAccess: getAllUsers=> found " + users.size() + " users");
+			
+			return users;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new java.util.ArrayList<>();
+		}
+	}
+	
+	/**
+	 * This method retrieves all reservations for a specific ride
+	 * 
+	 * @param rideId the ID of the ride
+	 * @return list of reservations for the ride
+	 */
+	public java.util.List<domain.RideReservation> getRideReservations(Integer rideId) {
+		System.out.println(">> DataAccess: getRideReservations=> rideId= " + rideId);
+		
+		try {
+			TypedQuery<domain.RideReservation> query = db.createQuery(
+				"SELECT r FROM RideReservation r WHERE r.ride.rideNumber = :rideId ORDER BY r.reservationDate DESC",
+				domain.RideReservation.class);
+			query.setParameter("rideId", rideId);
+			
+			java.util.List<domain.RideReservation> reservations = query.getResultList();
+			System.out.println(">> DataAccess: getRideReservations=> found " + reservations.size() + " reservations");
 			
 			return reservations;
 		} catch (Exception e) {

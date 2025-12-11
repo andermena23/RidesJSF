@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<f:view locale="#{index.language}">
+	<h:head>
+		<title>#{msg['MyRides.Title']}</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 2em;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 2em;
+				padding-bottom: 1em;
+				border-bottom: 2px solid #4CAF50;
+			}
+			.user-info {
+				text-align: right;
+			}
+			.btn-logout {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 0.5em 1em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.9em;
+			}
+			.btn-logout:hover {
+				background-color: #d32f2f;
+			}
+			.btn-back {
+				background-color: #2196F3;
+				color: white;
+				border: none;
+				padding: 0.5em 1em;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.9em;
+				margin-bottom: 1em;
+			}
+			.btn-back:hover {
+				background-color: #0b7dda;
+			}
+			.rides-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 1em;
+			}
+			.rides-table th {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+				border: 1px solid #ddd;
+			}
+			.rides-table td {
+				padding: 10px;
+				border: 1px solid #ddd;
+			}
+			.rides-table tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+			.rides-table tr:hover {
+				background-color: #f5f5f5;
+			}
+			.message {
+				padding: 1em;
+				margin: 1em 0;
+				border-radius: 4px;
+				background-color: #e3f2fd;
+				color: #1976d2;
+				border: 1px solid #90caf9;
+			}
+			.no-rides {
+				text-align: center;
+				padding: 2em;
+				color: #666;
+				font-style: italic;
+			}
+		</style>
+	</h:head>
+	<h:body>
+		<f:loadBundle basename="Etiquetas" var="msg" />
+		
+		<!-- Check access on page load -->
+		<f:metadata>
+			<f:event type="preRenderView" listener="#{myRides.checkAccess}" />
+		</f:metadata>
+		
+		<h:form id="myRidesForm">
+			<div class="header">
+				<h2>#{msg['MyRides.Title']}</h2>
+				<div class="user-info">
+					<p>#{msg['Login.Welcome']}, <strong>#{login.currentUser.username}</strong></p>
+					<p style="font-size: 0.9em; color: #666;">
+						#{msg['Index.Role']}: #{login.currentUser.role.roleName}
+						<h:panelGroup rendered="#{index.isTraveler()}">
+							 | #{msg['Index.Balance']}: <strong>#{login.walletBalance} €</strong>
+						</h:panelGroup>
+					</p>
+					<h:commandButton value="#{msg['Login.Logout']}" 
+					                 action="#{login.logout}" 
+					                 styleClass="btn-logout" />
+				</div>
+			</div>
+			
+			<h:commandButton value="#{msg['MyRides.BackToMenu']}" 
+			                 action="Index?faces-redirect=true" 
+			                 styleClass="btn-back" />
+			
+			<h3>#{msg['MyRides.YourRides']}</h3>
+			
+			<!-- Display message if any -->
+			<h:panelGroup rendered="#{not empty myRides.message and not myRides.hasRides}">
+				<div class="message">
+					<h:outputText value="#{myRides.message}" />
+				</div>
+			</h:panelGroup>
+			
+			<!-- Display rides table -->
+			<h:panelGroup rendered="#{myRides.hasRides}">
+				<table class="rides-table">
+					<thead>
+						<tr>
+							<th>#{msg['MyRides.RideNumber']}</th>
+							<th>#{msg['MyRides.From']}</th>
+							<th>#{msg['MyRides.To']}</th>
+							<th>#{msg['MyRides.Date']}</th>
+							<th>#{msg['MyRides.Places']}</th>
+							<th>#{msg['MyRides.Price']}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<ui:repeat value="#{myRides.driverRides}" var="ride">
+							<tr>
+								<td>#{ride.rideNumber}</td>
+								<td>#{ride.from}</td>
+								<td>#{ride.to}</td>
+								<td>
+									<h:outputText value="#{ride.date}">
+										<f:convertDateTime pattern="yyyy-MM-dd" />
+									</h:outputText>
+								</td>
+								<td>#{ride.nPlaces}</td>
+								<td>#{ride.price} €</td>
+							</tr>
+						</ui:repeat>
+					</tbody>
+				</table>
+			</h:panelGroup>
+			
+			<!-- Display message when no rides -->
+			<h:panelGroup rendered="#{not myRides.hasRides}">
+				<div class="no-rides">
+					#{msg['MyRides.NoRides']}
+				</div>
+			</h:panelGroup>
+		</h:form>
+	</h:body>
+</f:view>
+</html>
