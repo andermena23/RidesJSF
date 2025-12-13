@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+	<h:head>
+		<title>Rides by Driver</title>
+	</h:head>
+	<h:body>
+        <p:dataTable value="#{driverSelectBean.rides}" var="ride" 
+                     style="width:100%; border-collapse: collapse; margin-top: 1em;">
+            <p:column headerText="Depart City" style="border: 1px solid #ddd; padding: 8px;">
+                <h:outputText value="#{ride.from}" />
+            </p:column>
+            <p:column headerText="Arrival City" style="border: 1px solid #ddd; padding: 8px;">
+                <h:outputText value="#{ride.to}" />
+            </p:column>
+            <p:column headerText="Ride date" style="border: 1px solid #ddd; padding: 8px;">
+                <h:outputText value="#{ride.date}">
+                    <f:convertDateTime pattern="yyyy-MM-dd" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Price" style="border: 1px solid #ddd; padding: 8px;">
+                <h:outputText value="#{ride.price}" />
+            </p:column>
+        </p:dataTable>
+        <div>
+            <h:outputText value="BIDAI KOPURUA: #{driverSelectBean.rides.size()}"/>
+        </div>
+    </h:body>
+</html>

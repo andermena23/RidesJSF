@@ -198,6 +198,14 @@ public interface BLFacade {
 	public java.util.List<User> getAllUsers();
 	
 	/**
+	 * This method retrieves all drivers in the system
+	 * 
+	 * @return list of all drivers
+	 */
+	// @WebMethod
+	public java.util.List<domain.Driver> getAllDrivers();
+	
+	/**
 	 * This method retrieves all reservations for a specific ride
 	 * 
 	 * @param rideId the ID of the ride
@@ -214,5 +222,8 @@ public interface BLFacade {
 	 */
 	// @WebMethod
 	public java.util.List<Ride> getRidesByDriver(String driverEmail);
+
+	//getRidesByDate
+	public java.util.List<Ride> getRidesByDate(Date date);
 
 }

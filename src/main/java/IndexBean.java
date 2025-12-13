@@ -76,6 +76,11 @@ public class IndexBean implements Serializable {
 		System.out.println("myRides");
 		return "MyRides?faces-redirect=true";
 	}
+
+	public String ridesByDriver() {
+		System.out.println("ridesByDate");
+		return "DriverSelectButton?faces-redirect=true";
+	}
 	
 	public boolean canCreateRide() {
 		if (!login.isLoggedIn()) {

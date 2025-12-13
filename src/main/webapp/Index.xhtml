@@ -63,6 +63,10 @@
 			</div>
 			
 			<h3>#{msg['Index.SelectOption']}</h3>
+			<p>
+					<h:commandButton value="GIDARI BATEN BIDAI GUZTIAK ERAKUTSI ETA ZENBATU" action="#{index.ridesByDriver}"
+						style="font-size: 1em; padding: 0.5em 1em;" />
+			</p>
 			<h:panelGroup rendered="#{index.canCreateRide()}">
 				<p>
 					<h:commandButton value="#{msg['Index.CreateRide']}" action="#{index.createRide}"

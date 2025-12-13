@@ -700,6 +700,29 @@ public class HibernateDataAccess {
 	}
 	
 	/**
+	 * This method retrieves all drivers in the system
+	 * 
+	 * @return list of all drivers
+	 */
+	public java.util.List<Driver> getAllDrivers() {
+		System.out.println(">> DataAccess: getAllDrivers");
+		
+		try {
+			TypedQuery<Driver> query = db.createQuery(
+				"SELECT d FROM Driver d ORDER BY d.username",
+				Driver.class);
+			
+			java.util.List<Driver> drivers = query.getResultList();
+			System.out.println(">> DataAccess: getAllDrivers=> found " + drivers.size() + " drivers");
+			
+			return drivers;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new java.util.ArrayList<>();
+		}
+	}
+	
+	/**
 	 * This method retrieves all reservations for a specific ride
 	 * 
 	 * @param rideId the ID of the ride
@@ -722,6 +745,20 @@ public class HibernateDataAccess {
 			e.printStackTrace();
 			return new java.util.ArrayList<>();
 		}
+	}
+
+	//getRidesByDate
+	public List<Ride> getRidesByDate(Date date) {
+		System.out.println(">> DataAccess: getRidesByDate=> date= " + date);
+
+		List<Ride> res = new ArrayList<Ride>();
+		TypedQuery<Ride> query = db.createQuery("SELECT r FROM Ride r WHERE r.date=?1", Ride.class);
+		query.setParameter(1, date);
+		List<Ride> rides = query.getResultList();
+		for (Ride ride : rides) {
+			res.add(ride);
+		}
+		return res;
 	}
 
 }
