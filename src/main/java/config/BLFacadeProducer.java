@@ -32,7 +32,7 @@ public class BLFacadeProducer {
 	
 	@Produces
 	@Named("businessLogic")
-	@RequestScoped
+	@ApplicationScoped
 	public BLFacade produceBLFacade() {
 		System.out.println("[DEBUG] BLFacadeProducer - produceBLFacade() called - creating NEW BLFacade for this request");
 		HibernateDataAccess dataAccess = new HibernateDataAccess();
