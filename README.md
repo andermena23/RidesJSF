@@ -1,6 +1,3 @@
 # RidesJSF
-
-			<p>
-					<h:commandButton value="Date Select" action="#{index.ridesByDate}"
-						style="font-size: 1em; padding: 0.5em 1em;" />
-			</p>
+Software Ingeniaritza II irakasgairako garatutako proiektua, JSF eta Hibernate framework-ak lantzeko.
+2025 Ander Mena
